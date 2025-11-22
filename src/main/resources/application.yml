@@ -1,6 +1,11 @@
 spring:
   application:
     name: ai-code-generate-backend
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/chen_ai_code
+    username: root
+    password: 88888888
 server:
   port: 8787
   servlet:
