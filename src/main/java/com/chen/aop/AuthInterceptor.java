@@ -21,7 +21,10 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import static com.chen.constant.UserConstant.USER_LOGIN_STATE;
-
+/**
+ * 权限校验拦截器
+ * 校验用户是否有操作权限
+ */
 @Aspect
 @Component
 public class AuthInterceptor {
