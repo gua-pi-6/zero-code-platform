@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.chen</groupId>
-    <artifactId>ai-code-generate</artifactId>
+    <artifactId>zero-code-platform</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>ai-code-generate</name>
     <description>ai-code-generate</description>
