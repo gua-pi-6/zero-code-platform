@@ -11,7 +11,6 @@ import lombok.Getter;
 public enum ErrorCode {
 
 
-
     // 成功状态
     SUCCESS(0, "ok"),                          // 成功状态码
 
@@ -21,6 +20,7 @@ public enum ErrorCode {
     NOT_LOGIN_ERROR(40100, "未登录"),           // 未登录错误
     NO_AUTH_ERROR(40101, "无权限"),             // 无权限错误
     NOT_FOUND_ERROR(40400, "请求数据不存在"),    // 资源不存在错误
+    TOO_MANY_REQUEST(42900, "请求过于频繁"),
     FORBIDDEN_ERROR(40300, "禁止访问"),         // 禁止访问错误
 
 

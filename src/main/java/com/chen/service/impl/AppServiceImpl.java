@@ -7,6 +7,8 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.chen.constant.AppConstant;
 import com.chen.core.AiGenerateFacade;
+import com.chen.core.builder.VueProjectBuilder;
+import com.chen.core.handler.StreamHandlerExecutor;
 import com.chen.exception.BusinessException;
 import com.chen.exception.ErrorCode;
 import com.chen.exception.ThrowUtils;
@@ -17,6 +19,7 @@ import com.chen.model.enums.CodeGenTypeEnum;
 import com.chen.model.vo.AppVO;
 import com.chen.model.vo.UserVO;
 import com.chen.service.ChatHistoryService;
+import com.chen.service.ScreenshotService;
 import com.chen.service.UserService;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
@@ -54,6 +57,16 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
 
     @Resource
     private ChatHistoryService chatHistoryService;
+
+    @Resource
+    private StreamHandlerExecutor streamHandlerExecutor;
+
+    @Resource
+    private VueProjectBuilder vueProjectBuilder;
+
+    @Resource
+    private ScreenshotService screenshotService;
+
 
     @Override
     public boolean removeById(Serializable appId) {
@@ -94,20 +107,8 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         // 调用 AI 模型生成代码
         Flux<String> aiMessage = aiGenerateFacade.generateWithSaveStream(message, codeGenTypeEnum, appId);
 
-        StringBuilder aiContent = new StringBuilder();
-        return aiMessage.map( chunk ->{
-                        aiContent.append(chunk);
-                        return chunk;
-                })
-                .doOnComplete(() -> {
-                    // 保存 AI 对话历史
-                    chatHistoryService.addChatMessage(aiContent.toString(), loginUser.getId(), appId, ChatHistoryMessageTypeEnum.AI.getValue());
-                })
-                .doOnError((e) -> {
-                    // 保存错误的 AI 对话历史
-                    String errorMessage = "AI 对话失败: " + e.getMessage();
-                    chatHistoryService.addChatMessage(errorMessage, loginUser.getId(), appId, ChatHistoryMessageTypeEnum.AI.getValue());
-                });
+        // 收集 AI 响应的内容, 并保存到对话历史中
+        return streamHandlerExecutor.doExecute(aiMessage, chatHistoryService, appId, loginUser, codeGenTypeEnum);
     }
 
     @Override
@@ -123,7 +124,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         ThrowUtils.throwIf(!app.getUserId().equals(loginUser.getId()), ErrorCode.NO_AUTH_ERROR, "无权限");
         // 检查是否有deployKey 若没有则生成一个6位deployKey (字母 + 数字)
         String deployKey = app.getDeployKey();
-        if (StrUtil.isBlank(deployKey)){
+        if (StrUtil.isBlank(deployKey)) {
             deployKey = RandomUtil.randomString(6);
         }
         // 获取代码生成类型 获取原始生成路径
@@ -133,6 +134,20 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         // 检验原始生成路径是否存在 (访问路径)
         File source = new File(sourcePath);
         ThrowUtils.throwIf(!source.exists() || !source.isDirectory(), ErrorCode.NOT_FOUND_ERROR, "原始生成路径不存在");
+
+        // 检查是否为 vue 项目
+        CodeGenTypeEnum codeGenTypeEnum = CodeGenTypeEnum.getEnumByValue(codeGenType);
+        if (codeGenTypeEnum == CodeGenTypeEnum.VUE_PROJECT) {
+            // 构建vue项目
+            vueProjectBuilder.buildProjectAsync(sourcePath);
+
+            // 检查 dist 目录 是否存在
+            File distPath = new File(sourcePath, "dist");
+            ThrowUtils.throwIf(!distPath.exists() || !distPath.isDirectory(), ErrorCode.NOT_FOUND_ERROR, "vue项目构建失败");
+
+            source = distPath;
+        }
+
         // 复制文件到部署目录
         String deployDirPath = AppConstant.CODE_DEPLOY_ROOT_DIR + File.separator + deployKey;
         FileUtil.copyContent(source, new File(deployDirPath), true);
@@ -146,9 +161,49 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         boolean update = this.updateById(updateApp);
         ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "更新应用信息失败");
         // 返回可访问的 URL 地址
-        return String.format("%s/%s", AppConstant.CODE_DEPLOY_HOST, deployKey);
+        String deployUrl = String.format("%s/%s", AppConstant.CODE_DEPLOY_HOST, deployKey);
+
+        // 异步生成应用封面,并更新应用封面信息
+        generateAppScreenshotAsync(appId, deployUrl);
+        return deployUrl;
     }
 
+    /**
+     * 异步生成应用封面,并更新应用封面信息
+     *
+     * @param appId        应用id
+     * @param appUrl 应用封面访问url
+     */
+    @Override
+    public void generateAppScreenshotAsync(Long appId, String appUrl) {
+        // 参数效验
+        ThrowUtils.throwIf(appId == null || appId <= 0L, ErrorCode.PARAMS_ERROR, "应用id错误");
+        ThrowUtils.throwIf(StrUtil.isBlank(appUrl), ErrorCode.PARAMS_ERROR, "应用访问url不能为空");
+
+        // 异步生成封面截图
+        Thread.startVirtualThread(() -> {
+            // 生成封面截图
+            String screenshotUrl = screenshotService.generateAndUploadScreenshot(appUrl);
+
+            // 更新应用封面信息
+            App updateApp = App.builder()
+                    .id(appId)
+                    .cover(screenshotUrl)
+                    .editTime(LocalDateTime.now())
+                    .build();
+
+            boolean update = this.updateById(updateApp);
+            ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "更新应用封面失败");
+        });
+
+    }
+
+    /**
+     * 获取应用视图对象
+     *
+     * @param app 应用实体
+     * @return 应用视图对象
+     */
     @Override
     public AppVO getAppVO(App app) {
         if (app == null) {
@@ -166,6 +221,12 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         return appVO;
     }
 
+    /**
+     * 获取应用查询包装器
+     *
+     * @param appQueryRequest 应用查询请求
+     * @return 应用查询包装器
+     */
     @Override
     public QueryWrapper getQueryWrapper(AppQueryRequest appQueryRequest) {
         if (appQueryRequest == null) {
@@ -186,13 +247,19 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
                 .like("appName", appName)
                 .like("cover", cover)
                 .like("initPrompt", initPrompt)
-                .eq("codeGenType", codeGenType)
+                .eq("codeGenType", codeGenType, StrUtil.isNotBlank(codeGenType))
                 .eq("deployKey", deployKey)
                 .eq("priority", priority)
                 .eq("userId", userId)
                 .orderBy(sortField, "ascend".equals(sortOrder));
     }
 
+    /**
+     * 获取应用视图对象列表
+     *
+     * @param appList 应用实体列表
+     * @return 应用视图对象列表
+     */
     @Override
     public List<AppVO> getAppVOList(List<App> appList) {
         if (CollUtil.isEmpty(appList)) {

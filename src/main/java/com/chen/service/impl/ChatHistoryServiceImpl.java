@@ -15,11 +15,17 @@ import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.chen.model.entity.ChatHistory;
 import com.chen.mapper.ChatHistoryMapper;
 import com.chen.service.ChatHistoryService;
+import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import jakarta.annotation.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 对话历史 服务层实现。
@@ -29,9 +35,57 @@ import java.time.LocalDateTime;
 @Service
 public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatHistory>  implements ChatHistoryService{
 
+    private static final Logger log = LoggerFactory.getLogger(ChatHistoryServiceImpl.class);
     @Resource
     @Lazy
     private AppService appService;
+
+
+
+
+    @Override
+    public int loadChatHistory(Long appId, MessageWindowChatMemory messageWindowChatMemory, Integer maxMessageCount) {
+        try {
+            // 效验参数
+            ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用ID不能为空");
+            ThrowUtils.throwIf(messageWindowChatMemory == null, ErrorCode.PARAMS_ERROR, "消息窗口不能为空");
+            ThrowUtils.throwIf(maxMessageCount == null || maxMessageCount <= 0, ErrorCode.PARAMS_ERROR, "最大消息数量不能为空");
+
+            // 构建查询条件
+            QueryWrapper queryWrapper = QueryWrapper.create()
+                    .eq(ChatHistory::getAppId, appId)
+                    .orderBy(ChatHistory::getCreateTime, false)
+                    .limit(1, maxMessageCount);
+
+            // 查询对话历史记录
+            List<ChatHistory> chatHistories = this.list(queryWrapper);
+            ThrowUtils.throwIf(chatHistories == null || chatHistories.isEmpty(), ErrorCode.NOT_FOUND_ERROR, "对话历史不存在");
+
+            // 反转消息列表,确保先展现最早的消息
+            chatHistories = chatHistories.reversed();
+
+            // 清空缓存, 并缓存消息, 确保没有多余的消息
+            int loadCount = 0;
+            messageWindowChatMemory.clear();
+            for (ChatHistory chatHistory : chatHistories) {
+                if (ChatHistoryMessageTypeEnum.AI.getValue().equals(chatHistory.getMessageType())){
+                    messageWindowChatMemory.add(AiMessage.from(chatHistory.getMessage()));
+                    loadCount++;
+                }
+                if (ChatHistoryMessageTypeEnum.USER.getValue().equals(chatHistory.getMessageType())){
+                    messageWindowChatMemory.add(UserMessage.from(chatHistory.getMessage()));
+                    loadCount++;
+                }
+            }
+
+            // 返回缓存成功的消息数量
+            return loadCount;
+        } catch (Exception e) {
+            // 失败也不影响系统运行
+            log.info("加载对话历史失败 appId: {} 错误信息: {}", appId, e.getMessage());
+            return 0;
+        }
+    }
 
     @Override
     public Page<ChatHistory> listAppChatHistoryByPage(Long appId, int pageSize,

@@ -2,7 +2,7 @@ package com.chen.ai;
 
 import com.chen.ai.model.HtmlCodeResult;
 import com.chen.ai.model.MultiFileCodeResult;
-import dev.langchain4j.service.SystemMessage;
+import dev.langchain4j.service.*;
 import reactor.core.publisher.Flux;
 
 public interface AiCodeGeneratorService {
@@ -42,5 +42,15 @@ public interface AiCodeGeneratorService {
      */
     @SystemMessage(fromResource = "prompt/codegen-multi-file-system-prompt.txt")
     Flux<String> generateMultiFileCodeStream(String userMessage);
+
+    /**
+     * 生成 Vue 项目代码（流式）
+     *
+     * @param userMessage 用户消息
+     * @return 生成过程的流式响应
+     */
+    @SystemMessage(fromResource = "prompt/codegen-vue-system-prompt.txt")
+    TokenStream generateVueProjectCodeStream(@MemoryId long appId, @UserMessage String userMessage);
+
 
 }

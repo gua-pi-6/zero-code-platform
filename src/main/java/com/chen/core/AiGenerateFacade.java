@@ -1,14 +1,25 @@
 package com.chen.core;
 
+import cn.hutool.json.JSONUtil;
 import com.chen.ai.AiCodeGeneratorService;
+import com.chen.ai.AiCodeGeneratorServiceFactory;
 import com.chen.ai.model.HtmlCodeResult;
 import com.chen.ai.model.MultiFileCodeResult;
+import com.chen.ai.model.message.AiResponseMessage;
+import com.chen.ai.model.message.ToolExecutedMessage;
+import com.chen.ai.model.message.ToolRequestMessage;
+import com.chen.constant.AppConstant;
+import com.chen.core.builder.VueProjectBuilder;
 import com.chen.core.parser.CodeParserExecutor;
 import com.chen.core.saver.CodeFileSaverExecutor;
 import com.chen.exception.BusinessException;
 import com.chen.exception.ErrorCode;
 import com.chen.model.enums.CodeGenTypeEnum;
+import dev.langchain4j.model.chat.response.ChatResponse;
+import dev.langchain4j.service.TokenStream;
+import dev.langchain4j.service.tool.ToolExecution;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,11 +31,15 @@ import java.io.File;
  * AI 代码生成器
  */
 @Service
+@Slf4j
 public class AiGenerateFacade {
 
-    private static final Logger log = LoggerFactory.getLogger(AiGenerateFacade.class);
+
     @Resource
-    private AiCodeGeneratorService aiCodeGeneratorService;
+    private AiCodeGeneratorServiceFactory aiCodeGeneratorServiceFactory;
+    @Resource
+    private VueProjectBuilder vueProjectBuilder;
+
 
 
     /**
@@ -38,6 +53,9 @@ public class AiGenerateFacade {
         if (codeGenTypeEnum == null){
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "生成类型不能为空");
         }
+
+        // 根据appId获取对应的AI代码生成器服务
+        AiCodeGeneratorService aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId);
 
         return switch (codeGenTypeEnum){
             case HTML -> {
@@ -69,6 +87,9 @@ public class AiGenerateFacade {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "生成类型不能为空");
         }
 
+        // 根据appId获取对应的AI代码生成器服务
+        AiCodeGeneratorService aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId, codeGenTypeEnum);
+
         return switch (codeGenTypeEnum){
             case HTML -> {
                 Flux<String> result = aiCodeGeneratorService.generateHtmlCodeStream(userMessage);
@@ -78,6 +99,10 @@ public class AiGenerateFacade {
                 Flux<String> result = aiCodeGeneratorService.generateMultiFileCodeStream(userMessage);
                 yield this.processCodeStream(result, codeGenTypeEnum, appId);
             }
+            case VUE_PROJECT -> {
+                TokenStream result = aiCodeGeneratorService.generateVueProjectCodeStream(appId, userMessage);
+                yield this.processTokenStream(result, appId);
+            }
             default ->
             {
                 // 不支持的生成类型
@@ -86,6 +111,43 @@ public class AiGenerateFacade {
             }
         };
     }
+
+    /**
+     * 将 TokenStream 转换为 Flux<String>，并传递工具调用信息
+     *
+     * @param tokenStream TokenStream 对象
+     * @return Flux<String> 流式响应
+     */
+    private Flux<String> processTokenStream(TokenStream tokenStream, Long appId) {
+
+        return Flux.create(sink -> {
+            tokenStream.onPartialResponse((String partialResponse) -> {
+                        AiResponseMessage aiResponseMessage = new AiResponseMessage(partialResponse);
+                        sink.next(JSONUtil.toJsonStr(aiResponseMessage));
+                    })
+                    .onPartialToolExecutionRequest((index, toolExecutionRequest) -> {
+                        ToolRequestMessage toolRequestMessage = new ToolRequestMessage(toolExecutionRequest);
+                        sink.next(JSONUtil.toJsonStr(toolRequestMessage));
+                    })
+                    .onToolExecuted((ToolExecution toolExecution) -> {
+                        ToolExecutedMessage toolExecutedMessage = new ToolExecutedMessage(toolExecution);
+                        sink.next(JSONUtil.toJsonStr(toolExecutedMessage));
+                    })
+                    .onCompleteResponse((ChatResponse response) -> {
+                        // 执行 Vue 项目构建（同步执行，确保预览时项目已就绪）
+                        String projectPath = AppConstant.CODE_OUTPUT_ROOT_DIR + File.separator + "vue_project_" + appId;
+                        vueProjectBuilder.buildProject(projectPath);
+                        sink.complete();
+                    })
+
+                    .onError((Throwable error) -> {
+                        error.printStackTrace();
+                        sink.error(error);
+                    })
+                    .start();
+        });
+    }
+
 
     /**
      * 处理代码流，将其转换为代码内容并保存到文件

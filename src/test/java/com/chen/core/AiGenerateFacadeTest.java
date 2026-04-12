@@ -24,9 +24,9 @@ class AiGenerateFacadeTest {
 
     @Test
     void generateWithSaveStream() {
-        String userMessage = "生成一个登录页面,总共不超过20行代码";
+        String userMessage = "生成一个任务计划vue项目,总共不超过20行代码";
 
-        Flux<String> result = aiGenerateFacade.generateWithSaveStream(userMessage, CodeGenTypeEnum.MULTI_FILE);
+        Flux<String> result = aiGenerateFacade.generateWithSaveStream(userMessage, CodeGenTypeEnum.VUE_PROJECT, 1L);
         List<String> stringList = result.collectList().block();
         Assertions.assertNotNull(stringList);
 
