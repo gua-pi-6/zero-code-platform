@@ -83,7 +83,7 @@ public class AiCodeGeneratorServiceFactory {
                 .builder()
                 .id(appId)
                 .chatMemoryStore(redisChatMemoryStore)
-                .maxMessages(20)
+                .maxMessages(100)
                 .build();
         chatHistoryService.loadChatHistory(appId, windowChatMemory, 20);
 
@@ -97,6 +97,7 @@ public class AiCodeGeneratorServiceFactory {
                         .chatMemoryProvider(memoryId -> windowChatMemory)
                         .tools(toolManager.getAllTools())
                         .inputGuardrails(new PromptSafetyInputGuardrail())
+                        // 设置幻觉工具名称策略，避免模型调用不存在的工具时出现异常
                         .hallucinatedToolNameStrategy(
                                 toolExecutionRequest -> ToolExecutionResultMessage.from(toolExecutionRequest,
                                         "Error: There is no tool named " + toolExecutionRequest.name()))
