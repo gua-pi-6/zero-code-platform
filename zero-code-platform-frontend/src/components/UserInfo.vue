@@ -1,9 +1,14 @@
 <template>
   <div class="user-info">
-    <a-avatar :src="user?.userAvatar" :size="size">
+    <a-avatar class="user-avatar" :src="user?.userAvatar" :size="size">
       {{ user?.userName?.charAt(0) || 'U' }}
     </a-avatar>
-    <span v-if="showName" class="user-name">{{ user?.userName || '未知用户' }}</span>
+    <div v-if="showName" class="user-meta">
+      <span class="user-name">{{ user?.userName || '未命名用户' }}</span>
+      <span v-if="user?.userRole" class="user-role">
+        {{ user.userRole === 'admin' ? '管理员' : '创作者' }}
+      </span>
+    </div>
   </div>
 </template>
 
@@ -24,11 +29,25 @@ withDefaults(defineProps<Props>(), {
 .user-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+}
+
+.user-avatar {
+  box-shadow: 0 6px 16px rgba(20, 20, 19, 0.08);
+}
+
+.user-meta {
+  display: grid;
+  gap: 2px;
 }
 
 .user-name {
+  color: var(--text-strong);
   font-size: 14px;
-  color: #1a1a1a;
+}
+
+.user-role {
+  color: var(--text-subtle);
+  font-size: 12px;
 }
 </style>

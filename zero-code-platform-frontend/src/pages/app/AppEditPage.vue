@@ -1,17 +1,35 @@
 <template>
-  <div id="appEditPage">
-    <div class="page-header">
-      <h1>编辑应用信息</h1>
-    </div>
+  <div id="appEditPage" class="page-shell page-shell--wide edit-page">
+    <section class="edit-header">
+      <div>
+        <span class="page-eyebrow">App Settings</span>
+        <h1 class="page-title page-title--section">{{ appInfo?.appName || '编辑应用设置' }}</h1>
+        <p class="page-subtitle">
+          调整应用名称、封面和后台元信息。这里不改动原有生成逻辑，只负责管理展示层和元数据。
+        </p>
+      </div>
 
-    <div class="edit-container">
-      <a-card title="基本信息" :loading="loading">
+      <div class="edit-header__actions">
+        <a-button @click="goToChat">返回对话</a-button>
+        <a-button v-if="appInfo?.deployKey" type="primary" ghost @click="openPreview">
+          打开预览
+        </a-button>
+      </div>
+    </section>
+
+    <section class="edit-layout">
+      <div class="surface-panel edit-form-panel">
+        <div class="panel-heading">
+          <h2>基础信息</h2>
+          <p>可编辑字段会根据当前用户权限自动收敛，避免破坏原有权限边界。</p>
+        </div>
+
         <a-form
+          ref="formRef"
           :model="formData"
           :rules="rules"
           layout="vertical"
           @finish="handleSubmit"
-          ref="formRef"
         >
           <a-form-item label="应用名称" name="appName">
             <a-input
@@ -26,119 +44,128 @@
             v-if="isAdmin"
             label="应用封面"
             name="cover"
-            extra="支持图片链接，建议尺寸：400x300"
+            extra="建议使用 400 x 300 左右的图片地址，以获得更稳定的首页展示效果。"
           >
-            <a-input v-model:value="formData.cover" placeholder="请输入封面图片链接" />
-            <div v-if="formData.cover" class="cover-preview">
-              <a-image
-                :src="formData.cover"
-                :width="200"
-                :height="150"
-                fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
-              />
-            </div>
+            <a-input v-model:value="formData.cover" placeholder="请输入封面图片 URL" />
           </a-form-item>
 
-          <a-form-item v-if="isAdmin" label="优先级" name="priority" extra="设置为99表示精选应用">
-            <a-input-number
-              v-model:value="formData.priority"
-              :min="0"
-              :max="99"
-              style="width: 200px"
-            />
+          <a-form-item
+            v-if="isAdmin"
+            label="优先级"
+            name="priority"
+            extra="设置为 99 时通常用于首页精选推荐。"
+          >
+            <a-input-number v-model:value="formData.priority" :min="0" :max="99" />
           </a-form-item>
 
           <a-form-item label="初始提示词" name="initPrompt">
             <a-textarea
               v-model:value="formData.initPrompt"
-              placeholder="请输入初始提示词"
               :rows="4"
               :maxlength="1000"
+              disabled
               show-count
-              disabled
             />
-            <div class="form-tip">初始提示词不可修改</div>
+            <div class="field-note">初始提示词由创建阶段生成，这里保持只读。</div>
           </a-form-item>
 
-          <a-form-item label="生成类型" name="codeGenType">
-            <a-input
-              :value="formatCodeGenType(formData.codeGenType)"
-              placeholder="生成类型"
-              disabled
-            />
-            <div class="form-tip">生成类型不可修改</div>
+          <a-form-item label="生成方式" name="codeGenType">
+            <a-input :value="formatCodeGenType(formData.codeGenType)" disabled />
+            <div class="field-note">生成方式会影响预览和下载结构，因此不在这里改动。</div>
           </a-form-item>
 
-          <a-form-item v-if="formData.deployKey" label="部署密钥" name="deployKey">
-            <a-input v-model:value="formData.deployKey" placeholder="部署密钥" disabled />
-            <div class="form-tip">部署密钥不可修改</div>
+          <a-form-item v-if="formData.deployKey" label="部署标识" name="deployKey">
+            <a-input v-model:value="formData.deployKey" disabled />
           </a-form-item>
 
-          <a-form-item>
-            <a-space>
-              <a-button type="primary" html-type="submit" :loading="submitting">
-                保存修改
-              </a-button>
-              <a-button @click="resetForm">重置</a-button>
-              <a-button type="link" @click="goToChat">进入对话</a-button>
-            </a-space>
-          </a-form-item>
+          <div class="form-actions">
+            <a-button type="primary" html-type="submit" :loading="submitting">保存更改</a-button>
+            <a-button @click="resetForm">重置</a-button>
+          </div>
         </a-form>
-      </a-card>
+      </div>
 
-      <!-- 应用信息展示 -->
-      <a-card title="应用信息" style="margin-top: 24px">
-        <a-descriptions :column="2" bordered>
-          <a-descriptions-item label="应用ID">
-            {{ appInfo?.id }}
-          </a-descriptions-item>
-          <a-descriptions-item label="创建者">
-            <UserInfo :user="appInfo?.user" size="small" />
-          </a-descriptions-item>
-          <a-descriptions-item label="创建时间">
-            {{ formatTime(appInfo?.createTime) }}
-          </a-descriptions-item>
-          <a-descriptions-item label="更新时间">
-            {{ formatTime(appInfo?.updateTime) }}
-          </a-descriptions-item>
-          <a-descriptions-item label="部署时间">
-            {{ appInfo?.deployedTime ? formatTime(appInfo.deployedTime) : '未部署' }}
-          </a-descriptions-item>
-          <a-descriptions-item label="访问链接">
-            <a-button v-if="appInfo?.deployKey" type="link" @click="openPreview" size="small">
-              查看预览
-            </a-button>
-            <span v-else>未部署</span>
-          </a-descriptions-item>
-        </a-descriptions>
-      </a-card>
-    </div>
+      <div class="edit-side">
+        <div class="surface-panel edit-cover-panel">
+          <div class="panel-heading">
+            <h2>封面预览</h2>
+            <p>首页和卡片视图会优先使用这里的封面作为视觉入口。</p>
+          </div>
+
+          <div v-if="coverPreviewUrl" class="cover-preview">
+            <img :src="coverPreviewUrl" alt="应用封面预览" />
+          </div>
+          <div v-else class="cover-placeholder">
+            <strong>{{ appInfo?.appName?.charAt(0) || 'A' }}</strong>
+            <p>暂未设置封面</p>
+          </div>
+        </div>
+
+        <div class="surface-panel edit-meta-panel">
+          <div class="panel-heading">
+            <h2>只读元信息</h2>
+            <p>以下数据来自现有后端接口，只作为辅助参考，不参与编辑提交。</p>
+          </div>
+
+          <dl class="meta-list">
+            <div class="meta-item">
+              <dt>应用 ID</dt>
+              <dd>{{ appInfo?.id || '-' }}</dd>
+            </div>
+            <div class="meta-item">
+              <dt>创建者</dt>
+              <dd><UserInfo :user="appInfo?.user" size="small" /></dd>
+            </div>
+            <div class="meta-item">
+              <dt>创建时间</dt>
+              <dd>{{ formatTime(appInfo?.createTime) || '-' }}</dd>
+            </div>
+            <div class="meta-item">
+              <dt>更新时间</dt>
+              <dd>{{ formatTime(appInfo?.updateTime) || '-' }}</dd>
+            </div>
+            <div class="meta-item">
+              <dt>部署时间</dt>
+              <dd>{{ appInfo?.deployedTime ? formatTime(appInfo.deployedTime) : '未部署' }}</dd>
+            </div>
+            <div class="meta-item">
+              <dt>部署站点</dt>
+              <dd>
+                <a-button v-if="appInfo?.deployKey" type="link" @click="openPreview" size="small">
+                  打开站点
+                </a-button>
+                <span v-else>暂无</span>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
-import { useLoginUserStore } from '@/stores/loginUser'
+import type { FormInstance } from 'ant-design-vue'
 import { getAppVoById, updateApp, updateAppByAdmin } from '@/api/appController'
+import { getStaticPreviewUrl } from '@/config/env'
+import { useLoginUserStore } from '@/stores/loginUser'
 import { formatCodeGenType } from '@/utils/codeGenTypes'
+import { hasId, sameId, toIdString } from '@/utils/id'
 import { formatTime } from '@/utils/time'
 import UserInfo from '@/components/UserInfo.vue'
-import { getStaticPreviewUrl } from '@/config/env'
-import type { FormInstance } from 'ant-design-vue'
 
 const route = useRoute()
 const router = useRouter()
 const loginUserStore = useLoginUserStore()
 
-// 应用信息
 const appInfo = ref<API.AppVO>()
 const loading = ref(false)
 const submitting = ref(false)
 const formRef = ref<FormInstance>()
 
-// 表单数据
 const formData = reactive({
   appName: '',
   cover: '',
@@ -148,44 +175,38 @@ const formData = reactive({
   deployKey: '',
 })
 
-// 是否为管理员
-const isAdmin = computed(() => {
-  return loginUserStore.loginUser.userRole === 'admin'
-})
+const isAdmin = computed(() => loginUserStore.loginUser.userRole === 'admin')
+const coverPreviewUrl = computed(() => formData.cover || appInfo.value?.cover || '')
 
-// 表单验证规则
 const rules = {
   appName: [
     { required: true, message: '请输入应用名称', trigger: 'blur' },
-    { min: 1, max: 50, message: '应用名称长度在1-50个字符', trigger: 'blur' },
+    { min: 1, max: 50, message: '应用名称长度需在 1 到 50 个字符之间', trigger: 'blur' },
   ],
-  cover: [{ type: 'url', message: '请输入有效的URL', trigger: 'blur' }],
-  priority: [{ type: 'number', min: 0, max: 99, message: '优先级范围0-99', trigger: 'blur' }],
+  cover: [{ type: 'url', message: '请输入合法的图片地址', trigger: 'blur' }],
+  priority: [{ type: 'number', min: 0, max: 99, message: '优先级范围为 0 到 99', trigger: 'blur' }],
 }
 
-// 获取应用信息
 const fetchAppInfo = async () => {
   const id = route.params.id as string
   if (!id) {
-    message.error('应用ID不存在')
+    message.error('应用 ID 不存在')
     router.push('/')
     return
   }
 
   loading.value = true
   try {
-    const res = await getAppVoById({ id: id as unknown as number })
+    const res = await getAppVoById({ id })
     if (res.data.code === 0 && res.data.data) {
       appInfo.value = res.data.data
 
-      // 检查权限
-      if (!isAdmin.value && appInfo.value.userId !== loginUserStore.loginUser.id) {
-        message.error('您没有权限编辑此应用')
+      if (!isAdmin.value && !sameId(appInfo.value.userId, loginUserStore.loginUser.id)) {
+        message.error('你没有权限编辑这个应用')
         router.push('/')
         return
       }
 
-      // 填充表单数据
       formData.appName = appInfo.value.appName || ''
       formData.cover = appInfo.value.cover || ''
       formData.priority = appInfo.value.priority || 0
@@ -193,57 +214,50 @@ const fetchAppInfo = async () => {
       formData.codeGenType = appInfo.value.codeGenType || ''
       formData.deployKey = appInfo.value.deployKey || ''
     } else {
-      message.error('获取应用信息失败')
+      message.error('加载应用信息失败')
       router.push('/')
     }
   } catch (error) {
-    console.error('获取应用信息失败：', error)
-    message.error('获取应用信息失败')
+    console.error('加载应用信息失败', error)
+    message.error('加载应用信息失败')
     router.push('/')
   } finally {
     loading.value = false
   }
 }
 
-// 提交表单
 const handleSubmit = async () => {
-  if (!appInfo.value?.id) return
+  const currentAppId = toIdString(appInfo.value?.id)
+  if (!currentAppId) return
 
   submitting.value = true
   try {
-    let res
-    if (isAdmin.value) {
-      // 管理员可以修改更多字段
-      res = await updateAppByAdmin({
-        id: appInfo.value.id,
-        appName: formData.appName,
-        cover: formData.cover,
-        priority: formData.priority,
-      })
-    } else {
-      // 普通用户只能修改应用名称
-      res = await updateApp({
-        id: appInfo.value.id,
-        appName: formData.appName,
-      })
-    }
+    const res = isAdmin.value
+      ? await updateAppByAdmin({
+          id: currentAppId,
+          appName: formData.appName,
+          cover: formData.cover,
+          priority: formData.priority,
+        })
+      : await updateApp({
+          id: currentAppId,
+          appName: formData.appName,
+        })
 
     if (res.data.code === 0) {
-      message.success('修改成功')
-      // 重新获取应用信息
+      message.success('保存成功')
       await fetchAppInfo()
     } else {
-      message.error('修改失败：' + res.data.message)
+      message.error(`保存失败：${res.data.message}`)
     }
   } catch (error) {
-    console.error('修改失败：', error)
-    message.error('修改失败')
+    console.error('保存失败', error)
+    message.error('保存失败，请稍后重试')
   } finally {
     submitting.value = false
   }
 }
 
-// 重置表单
 const resetForm = () => {
   if (appInfo.value) {
     formData.appName = appInfo.value.appName || ''
@@ -253,14 +267,12 @@ const resetForm = () => {
   formRef.value?.clearValidate()
 }
 
-// 进入对话页面
 const goToChat = () => {
-  if (appInfo.value?.id) {
-    router.push(`/app/chat/${appInfo.value.id}`)
+  if (hasId(appInfo.value?.id)) {
+    router.push(`/app/chat/${toIdString(appInfo.value?.id)}`)
   }
 }
 
-// 打开预览
 const openPreview = () => {
   if (appInfo.value?.codeGenType && appInfo.value?.id) {
     const url = getStaticPreviewUrl(appInfo.value.codeGenType, String(appInfo.value.id))
@@ -268,56 +280,157 @@ const openPreview = () => {
   }
 }
 
-// 页面加载时获取应用信息
 onMounted(() => {
   fetchAppInfo()
 })
 </script>
 
 <style scoped>
-#appEditPage {
-  padding: 24px;
-  max-width: 1000px;
-  margin: 0 auto;
+.edit-page {
+  display: grid;
+  gap: 28px;
+  padding-bottom: 40px;
 }
 
-.page-header {
+.edit-header {
   display: flex;
-  align-items: center;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.edit-header__actions {
+  display: flex;
   gap: 12px;
-  margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
-.page-header h1 {
+.edit-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.75fr);
+  gap: 24px;
+}
+
+.edit-form-panel,
+.edit-cover-panel,
+.edit-meta-panel {
+  padding: 28px;
+}
+
+.edit-side {
+  display: grid;
+  gap: 24px;
+}
+
+.panel-heading h2 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
+  color: var(--text-strong);
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
 }
 
-.edit-container {
-  border-radius: 8px;
+.panel-heading p {
+  margin: 10px 0 0;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.field-note {
+  margin-top: 8px;
+  color: var(--text-subtle);
+  font-size: 13px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .cover-preview {
-  margin-top: 12px;
-  padding: 12px;
-  border: 1px solid #e8e8e8;
-  border-radius: 6px;
-  background: #fafafa;
+  overflow: hidden;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.7);
 }
 
-.form-tip {
-  font-size: 12px;
-  color: #999;
-  margin-top: 4px;
+.cover-preview img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
 }
 
-:deep(.ant-card-head) {
-  background: #fafafa;
+.cover-placeholder {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--border-light);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top left, rgba(201, 100, 66, 0.18), transparent 24%),
+    linear-gradient(135deg, #efe9dc, #e6ddce);
 }
 
-:deep(.ant-descriptions-item-label) {
-  background: #fafafa;
-  font-weight: 500;
+.cover-placeholder strong {
+  color: rgba(20, 20, 19, 0.14);
+  font-family: var(--font-serif);
+  font-size: clamp(4rem, 8vw, 5.2rem);
+  line-height: 1;
+}
+
+.cover-placeholder p {
+  margin: 0;
+  color: var(--text-subtle);
+}
+
+.meta-list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.meta-item {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.meta-item:last-child {
+  border-bottom: none;
+}
+
+.meta-item dt {
+  color: var(--text-subtle);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.meta-item dd {
+  margin: 0;
+  color: var(--text-strong);
+}
+
+@media (max-width: 1040px) {
+  .edit-header,
+  .edit-layout {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 768px) {
+  .edit-form-panel,
+  .edit-cover-panel,
+  .edit-meta-panel {
+    padding: 22px;
+  }
+
+  .meta-item {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

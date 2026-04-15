@@ -1,11 +1,16 @@
 <template>
-  <a-modal v-model:open="visible" title="部署成功" :footer="null" width="600px">
-    <div class="deploy-success">
-      <div class="success-icon">
-        <CheckCircleOutlined style="color: #52c41a; font-size: 48px" />
+  <a-modal v-model:open="visible" title="部署成功" :footer="null" width="620px">
+    <div class="deploy-modal">
+      <div class="deploy-state">
+        <div class="deploy-state__icon">
+          <CheckCircleOutlined />
+        </div>
+        <div>
+          <h3>站点已经发布完成</h3>
+          <p>当前部署地址已经可用，你可以直接复制链接，或立即在新标签页中打开站点。</p>
+        </div>
       </div>
-      <h3>网站部署成功！</h3>
-      <p>你的网站已经成功部署，可以通过以下链接访问：</p>
+
       <div class="deploy-url">
         <a-input :value="deployUrl" readonly>
           <template #suffix>
@@ -15,9 +20,10 @@
           </template>
         </a-input>
       </div>
+
       <div class="deploy-actions">
-        <a-button type="primary" @click="handleOpenSite">访问网站</a-button>
-        <a-button @click="handleClose">关闭</a-button>
+        <a-button type="primary" @click="handleOpenSite">打开站点</a-button>
+        <a-button @click="handleClose">稍后再说</a-button>
       </div>
     </div>
   </a-modal>
@@ -49,10 +55,10 @@ const visible = computed({
 const handleCopyUrl = async () => {
   try {
     await navigator.clipboard.writeText(props.deployUrl)
-    message.success('链接已复制到剪贴板')
+    message.success('部署地址已复制到剪贴板')
   } catch (error) {
-    console.error('复制失败：', error)
-    message.error('复制失败')
+    console.error('复制部署地址失败', error)
+    message.error('复制失败，请稍后重试')
   }
 }
 
@@ -66,33 +72,46 @@ const handleClose = () => {
 </script>
 
 <style scoped>
-.deploy-success {
-  text-align: center;
-  padding: 24px;
+.deploy-modal {
+  display: grid;
+  gap: 22px;
 }
 
-.success-icon {
-  margin-bottom: 16px;
+.deploy-state {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: start;
 }
 
-.deploy-success h3 {
-  margin: 0 0 16px;
-  font-size: 20px;
-  font-weight: 600;
+.deploy-state__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  color: var(--success);
+  background: rgba(93, 122, 91, 0.12);
+  font-size: 28px;
 }
 
-.deploy-success p {
-  margin: 0 0 24px;
-  color: #666;
+.deploy-state h3 {
+  margin: 0;
+  color: var(--text-strong);
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
 }
 
-.deploy-url {
-  margin-bottom: 24px;
+.deploy-state p {
+  margin: 10px 0 0;
+  color: var(--text-muted);
+  line-height: 1.8;
 }
 
 .deploy-actions {
   display: flex;
+  justify-content: flex-end;
   gap: 12px;
-  justify-content: center;
+  flex-wrap: wrap;
 }
 </style>

@@ -1,29 +1,58 @@
 <script setup lang="ts">
 import BasicLayout from '@/layouts/BasicLayout.vue'
+
+const themeConfig = {
+  token: {
+    colorPrimary: '#0071e3',
+    colorInfo: '#0071e3',
+    colorSuccess: '#5d7a5b',
+    colorWarning: '#c98a45',
+    colorError: '#b53333',
+    colorText: '#141413',
+    colorTextSecondary: '#5e5d59',
+    colorBgBase: '#f5f4ed',
+    borderRadius: 18,
+    fontFamily: "'Avenir Next', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+    boxShadow: '0 8px 24px rgba(20, 20, 19, 0.035)',
+  },
+  components: {
+    Layout: {
+      headerBg: 'transparent',
+      footerBg: 'transparent',
+      bodyBg: 'transparent',
+    },
+    Button: {
+      controlHeight: 44,
+      fontWeight: 600,
+      defaultBorderColor: '#d1cfc5',
+      defaultBg: '#e8e6dc',
+      defaultColor: '#4d4c48',
+      primaryShadow: 'none',
+    },
+    Input: {
+      controlHeight: 48,
+    },
+    Select: {
+      controlHeight: 48,
+    },
+    Card: {
+      headerBg: 'transparent',
+    },
+    Table: {
+      headerBg: '#f8f6ef',
+    },
+  },
+}
 </script>
 
 <template>
-  <BasicLayout />
+  <a-config-provider :theme="themeConfig">
+    <BasicLayout />
+  </a-config-provider>
 </template>
 
-<style>
-/* 全局样式优化 */
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
-    'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-}
-
-html {
-  overflow-x: hidden;
+<style scoped>
+:deep(.ant-app) {
+  min-height: 100vh;
 }
 </style>

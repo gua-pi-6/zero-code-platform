@@ -1,59 +1,62 @@
 <template>
-  <a-modal v-model:open="visible" title="应用详情" :footer="null" width="500px">
-    <div class="app-detail-content">
-      <!-- 应用基础信息 -->
-      <div class="app-basic-info">
-        <div class="info-item">
-          <span class="info-label">创建者：</span>
-          <UserInfo :user="app?.user" size="small" />
-        </div>
-        <div class="info-item">
-          <span class="info-label">创建时间：</span>
-          <span>{{ formatTime(app?.createTime) }}</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">生成类型：</span>
-          <a-tag v-if="app?.codeGenType" color="blue">
-            {{ formatCodeGenType(app.codeGenType) }}
-          </a-tag>
-          <span v-else>未知类型</span>
-        </div>
-      </div>
+  <a-modal v-model:open="visible" title="应用概览" :footer="null" width="560px">
+    <div class="detail-modal">
+      <section class="detail-hero">
+        <span class="page-eyebrow">App Profile</span>
+        <h2>{{ app?.appName || '未命名应用' }}</h2>
+        <p>{{ promptSummary }}</p>
+      </section>
 
-      <!-- 操作栏（仅本人或管理员可见） -->
-      <div v-if="showActions" class="app-actions">
-        <a-space>
-          <a-button type="primary" @click="handleEdit">
+      <section class="detail-grid">
+        <div class="detail-item">
+          <span>创建者</span>
+          <div><UserInfo :user="app?.user" size="small" /></div>
+        </div>
+        <div class="detail-item">
+          <span>创建时间</span>
+          <strong>{{ formatTime(app?.createTime) || '暂无记录' }}</strong>
+        </div>
+        <div class="detail-item">
+          <span>生成方式</span>
+          <strong>{{ formatCodeGenType(app?.codeGenType) }}</strong>
+        </div>
+        <div class="detail-item">
+          <span>部署状态</span>
+          <strong>{{ app?.deployKey ? '已发布' : '未部署' }}</strong>
+        </div>
+      </section>
+
+      <section v-if="showActions" class="detail-actions">
+        <a-button type="primary" @click="handleEdit">
+          <template #icon>
+            <EditOutlined />
+          </template>
+          编辑应用
+        </a-button>
+        <a-popconfirm
+          title="删除后将无法恢复，确定继续吗？"
+          ok-text="确认删除"
+          cancel-text="取消"
+          @confirm="handleDelete"
+        >
+          <a-button danger>
             <template #icon>
-              <EditOutlined />
+              <DeleteOutlined />
             </template>
-            修改
+            删除应用
           </a-button>
-          <a-popconfirm
-            title="确定要删除这个应用吗？"
-            @confirm="handleDelete"
-            ok-text="确定"
-            cancel-text="取消"
-          >
-            <a-button danger>
-              <template #icon>
-                <DeleteOutlined />
-              </template>
-              删除
-            </a-button>
-          </a-popconfirm>
-        </a-space>
-      </div>
+        </a-popconfirm>
+      </section>
     </div>
   </a-modal>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons-vue'
-import UserInfo from './UserInfo.vue'
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons-vue'
+import UserInfo from '@/components/UserInfo.vue'
 import { formatTime } from '@/utils/time'
-import {formatCodeGenType} from "../utils/codeGenTypes.ts";
+import { formatCodeGenType } from '@/utils/codeGenTypes'
 
 interface Props {
   open: boolean
@@ -78,6 +81,14 @@ const visible = computed({
   set: (value) => emit('update:open', value),
 })
 
+const promptSummary = computed(() => {
+  const prompt = props.app?.initPrompt?.trim()
+  if (!prompt) {
+    return '这是一个等待继续完善的应用项目，你可以继续对话、编辑或部署它。'
+  }
+  return prompt.length > 150 ? `${prompt.slice(0, 150)}...` : prompt
+})
+
 const handleEdit = () => {
   emit('edit')
 }
@@ -88,29 +99,64 @@ const handleDelete = () => {
 </script>
 
 <style scoped>
-.app-detail-content {
-  padding: 8px 0;
+.detail-modal {
+  display: grid;
+  gap: 24px;
 }
 
-.app-basic-info {
-  margin-bottom: 24px;
+.detail-hero h2 {
+  margin: 0;
+  color: var(--text-strong);
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  line-height: 1.1;
 }
 
-.info-item {
+.detail-hero p {
+  margin: 14px 0 0;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.detail-item {
+  padding: 18px;
+  border: 1px solid var(--border-light);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.detail-item span {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text-subtle);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.detail-item strong {
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.detail-actions {
   display: flex;
-  align-items: center;
-  margin-bottom: 12px;
+  gap: 12px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
-.info-label {
-  width: 80px;
-  color: #666;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-.app-actions {
-  padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+@media (max-width: 640px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
