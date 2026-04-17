@@ -8,7 +8,6 @@ import com.mybatisflex.core.service.IService;
 import com.chen.model.entity.App;
 import reactor.core.publisher.Flux;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -66,10 +65,11 @@ public interface AppService extends IService<App> {
     /**
      * 通过对话，生成代码
      *
-     * @param message 用户消息
-     * @param appId 应用id
+     * @param message   用户消息
+     * @param appId     应用id
      * @param loginUser 登录用户
+     * @param chatMode  聊天模式 （chat: 聊天模式, edit: 编辑模式）
      * @return 生成的代码流
      */
-    Flux<String> chatToGenCode(String message, Long appId, User loginUser);
+    Flux<String> chatToGenCode(String message, Long appId, User loginUser, String chatMode);
 }

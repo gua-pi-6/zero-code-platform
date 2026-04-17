@@ -2,7 +2,6 @@ package com.chen.service;
 
 import com.chen.model.dto.chathistory.ChatHistoryQueryRequest;
 import com.chen.model.entity.User;
-import com.chen.model.enums.ChatHistoryMessageTypeEnum;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
@@ -17,7 +16,7 @@ import java.time.LocalDateTime;
  * @author 辰
  */
 public interface ChatHistoryService extends IService<ChatHistory> {
-    int loadChatHistory(Long appId, MessageWindowChatMemory messageWindowChatMemory, Integer maxMessageCount);
+    int loadChatHistory(Long appId, MessageWindowChatMemory messageWindowChatMemory, Integer maxMessageCount, String chatMode);
 
     /**
      * 分页查询应用的对话历史
@@ -33,13 +32,15 @@ public interface ChatHistoryService extends IService<ChatHistory> {
 
     /**
      * 添加对话消息
-     * @param message 消息
-     * @param userId 用户id
-     * @param appId 应用id
+     *
+     * @param message     消息
+     * @param userId      用户id
+     * @param appId       应用id
      * @param messageType 消息类型
+     * @param chatMode
      * @return 是否成功
      */
-    boolean addChatMessage(String message, Long userId, Long appId, String messageType);
+    boolean addChatMessage(String message, Long userId, Long appId, String messageType, String chatMode);
 
     /**
      * 根据应用id删除对话历史

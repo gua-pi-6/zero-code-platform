@@ -74,6 +74,25 @@ public class AiGenerateFacade {
             }
         };
     }
+    /**
+     * 生成交流内容, 不修改应用 (仅交流类型下)
+     *
+     * @param userMessage 用户消息
+     * @param codeGenTypeEnum 生成类型
+     * @return 生成的文件
+     */
+    public Flux<String> generateDiscussion(String userMessage, CodeGenTypeEnum codeGenTypeEnum, Long appId){
+        if (codeGenTypeEnum == null){
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "生成类型不能为空");
+        }
+
+        // 根据appId获取对应的AI代码生成器服务
+        AiCodeGeneratorService aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiDiscussionGeneratorService(appId, codeGenTypeEnum);
+
+        return aiCodeGeneratorService.generateDiscussionStream(userMessage);
+    }
+
+
 
     /**
      * 生成代码并保存到文件（流式）

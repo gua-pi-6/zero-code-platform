@@ -1,13 +1,11 @@
 package com.chen.core.handler;
 
-import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.chen.ai.model.message.*;
 import com.chen.ai.tools.BaseTool;
 import com.chen.ai.tools.ToolManager;
-import com.chen.constant.AppConstant;
 import com.chen.core.builder.VueProjectBuilder;
 import com.chen.model.entity.User;
 import com.chen.model.enums.ChatHistoryMessageTypeEnum;
@@ -17,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,11 +39,12 @@ public class JsonMessageStreamHandler {
      * @param chatHistoryService 聊天历史服务
      * @param appId              应用ID
      * @param loginUser          登录用户
+     * @param chatMode
      * @return 处理后的流
      */
     public Flux<String> handle(Flux<String> originFlux,
                                ChatHistoryService chatHistoryService,
-                               long appId, User loginUser) {
+                               long appId, User loginUser, String chatMode) {
         // 收集数据用于生成后端记忆格式
         StringBuilder chatHistoryStringBuilder = new StringBuilder();
         // 用于跟踪已经见过的工具ID，判断是否是第一次调用
@@ -60,7 +58,7 @@ public class JsonMessageStreamHandler {
                 .doOnComplete(() -> {
                     // 流式响应完成后，添加 AI 消息到对话历史
                     String aiResponse = chatHistoryStringBuilder.toString();
-                    chatHistoryService.addChatMessage(aiResponse, loginUser.getId(), appId, ChatHistoryMessageTypeEnum.AI.getValue());
+                    chatHistoryService.addChatMessage(aiResponse, loginUser.getId(), appId, ChatHistoryMessageTypeEnum.AI.getValue(), chatMode);
 
                     // 异步构建 vue 项目
                     // 取消异步构建 vue 项目, 选取同步构建
@@ -70,7 +68,7 @@ public class JsonMessageStreamHandler {
                 .doOnError(error -> {
                     // 如果AI回复失败，也要记录错误消息
                     String errorMessage = "AI回复失败: " + error.getMessage();
-                    chatHistoryService.addChatMessage(errorMessage, loginUser.getId(), appId, ChatHistoryMessageTypeEnum.AI.getValue());
+                    chatHistoryService.addChatMessage(errorMessage, loginUser.getId(), appId, ChatHistoryMessageTypeEnum.AI.getValue(), chatMode);
                 });
     }
 

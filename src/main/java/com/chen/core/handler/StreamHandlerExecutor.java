@@ -29,16 +29,17 @@ public class StreamHandlerExecutor {
      * @param appId              应用ID
      * @param loginUser          登录用户
      * @param codeGenType        代码生成类型
+     * @param chatMode
      * @return 处理后的流
      */
     public Flux<String> doExecute(Flux<String> originFlux,
                                   ChatHistoryService chatHistoryService,
-                                  long appId, User loginUser, CodeGenTypeEnum codeGenType) {
+                                  long appId, User loginUser, CodeGenTypeEnum codeGenType, String chatMode) {
         return switch (codeGenType) {
             case VUE_PROJECT -> // 使用注入的组件实例
-                    jsonMessageStreamHandler.handle(originFlux, chatHistoryService, appId, loginUser);
+                    jsonMessageStreamHandler.handle(originFlux, chatHistoryService, appId, loginUser, chatMode);
             case HTML, MULTI_FILE -> // 简单文本处理器不需要依赖注入
-                    new SimpleTextStreamHandler().handle(originFlux, chatHistoryService, appId, loginUser);
+                    new SimpleTextStreamHandler().handle(originFlux, chatHistoryService, appId, loginUser, chatMode);
         };
     }
 }

@@ -42,10 +42,16 @@ public class ChatHistory implements Serializable {
     private String message;
 
     /**
-     * user/ai
+     * 消息类型 user/ai
      */
     @Column("messageType")
     private String messageType;
+
+    /**
+     * 对话模式 edit/chat
+     */
+    @Column("chatMode")
+    private String chatMode;
 
     /**
      * 应用id
@@ -76,5 +82,7 @@ public class ChatHistory implements Serializable {
      */
     @Column(value = "isDelete", isLogicDelete = true)
     private Integer isDelete;
+
+
 
 }

@@ -86,29 +86,37 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
     }
 
     @Override
-    public Flux<String> chatToGenCode(String message, Long appId, User loginUser) {
+    public Flux<String> chatToGenCode(String message, Long appId, User loginUser, String chatMode) {
         // 效验参数
         ThrowUtils.throwIf(StrUtil.isBlank(message), ErrorCode.PARAMS_ERROR, "对话消息为空");
         ThrowUtils.throwIf(appId == null || appId <= 0L, ErrorCode.PARAMS_ERROR, "应用id错误");
         ThrowUtils.throwIf(loginUser == null, ErrorCode.PARAMS_ERROR, "未登录");
+        ThrowUtils.throwIf(chatMode == null, ErrorCode.PARAMS_ERROR, "对话模式错误");
         // 查询应用信息
         App app = this.getById(appId);
         ThrowUtils.throwIf(app == null, ErrorCode.NOT_FOUND_ERROR, "应用不存在");
         // 用户权限效验 判断是否为应用创建者
         ThrowUtils.throwIf(!app.getUserId().equals(loginUser.getId()), ErrorCode.NO_AUTH_ERROR, "无权限");
-        // 调用 AI 模型生成代码
         String codeGenType = app.getCodeGenType();
         CodeGenTypeEnum codeGenTypeEnum = CodeGenTypeEnum.getEnumByValue(codeGenType);
         ThrowUtils.throwIf(codeGenTypeEnum == null, ErrorCode.PARAMS_ERROR, "代码生成类型不存在");
 
         // 保存用户对话历史
-        chatHistoryService.addChatMessage(message, loginUser.getId(), appId, ChatHistoryMessageTypeEnum.USER.getValue());
+        chatHistoryService.addChatMessage(message, loginUser.getId(), appId, ChatHistoryMessageTypeEnum.USER.getValue(), chatMode);
 
         // 调用 AI 模型生成代码
-        Flux<String> aiMessage = aiGenerateFacade.generateWithSaveStream(message, codeGenTypeEnum, appId);
+        Flux<String> aiMessage = null;
+        if (AppConstant.CHAT_MODE.equals(chatMode)){
+            aiMessage = aiGenerateFacade.generateDiscussion(message, codeGenTypeEnum, appId);
+        } else if (AppConstant.EDIT_MODE.equals(chatMode)){
+            aiMessage = aiGenerateFacade.generateWithSaveStream(message, codeGenTypeEnum, appId);
+        } else {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "对话类型错误");
+        }
 
+        ThrowUtils.throwIf(aiMessage == null, ErrorCode.OPERATION_ERROR, "AI 生成代码失败");
         // 收集 AI 响应的内容, 并保存到对话历史中
-        return streamHandlerExecutor.doExecute(aiMessage, chatHistoryService, appId, loginUser, codeGenTypeEnum);
+        return streamHandlerExecutor.doExecute(aiMessage, chatHistoryService, appId, loginUser, codeGenTypeEnum, chatMode);
     }
 
     @Override

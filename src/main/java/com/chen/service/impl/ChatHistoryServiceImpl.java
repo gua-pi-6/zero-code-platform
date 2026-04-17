@@ -1,6 +1,7 @@
 package com.chen.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.chen.constant.AppConstant;
 import com.chen.constant.UserConstant;
 import com.chen.exception.ErrorCode;
 import com.chen.exception.ThrowUtils;
@@ -44,7 +45,7 @@ public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatH
 
 
     @Override
-    public int loadChatHistory(Long appId, MessageWindowChatMemory messageWindowChatMemory, Integer maxMessageCount) {
+    public int loadChatHistory(Long appId, MessageWindowChatMemory messageWindowChatMemory, Integer maxMessageCount, String chatMode) {
         try {
             // 效验参数
             ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用ID不能为空");
@@ -54,6 +55,7 @@ public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatH
             // 构建查询条件
             QueryWrapper queryWrapper = QueryWrapper.create()
                     .eq(ChatHistory::getAppId, appId)
+                    .eq(ChatHistory::getChatMode, chatMode)
                     .orderBy(ChatHistory::getCreateTime, false)
                     .limit(1, maxMessageCount);
 
@@ -112,7 +114,7 @@ public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatH
 
 
     @Override
-    public boolean addChatMessage(String message, Long userId, Long appId, String messageType) {
+    public boolean addChatMessage(String message, Long userId, Long appId, String messageType, String chatMode) {
         // 效验参数
         ThrowUtils.throwIf(StrUtil.isBlank(message), ErrorCode.PARAMS_ERROR, "消息不能为空");
         ThrowUtils.throwIf(ChatHistoryMessageTypeEnum.getEnumByValue(messageType) == null, ErrorCode.PARAMS_ERROR, "消息类型不存在");
@@ -123,6 +125,7 @@ public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatH
         ChatHistory chatHistory = ChatHistory.builder()
                 .message(message)
                 .messageType(messageType)
+                .chatMode(chatMode)
                 .appId(appId)
                 .userId(userId)
                 .build();

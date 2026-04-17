@@ -21,11 +21,12 @@ public class SimpleTextStreamHandler {
      * @param chatHistoryService 聊天历史服务
      * @param appId              应用ID
      * @param loginUser          登录用户
+     * @param chatMode
      * @return 处理后的流
      */
     public Flux<String> handle(Flux<String> originFlux,
                                ChatHistoryService chatHistoryService,
-                               long appId, User loginUser) {
+                               long appId, User loginUser, String chatMode) {
         StringBuilder aiResponseBuilder = new StringBuilder();
         return originFlux
                 .map(chunk -> {
@@ -36,12 +37,12 @@ public class SimpleTextStreamHandler {
                 .doOnComplete(() -> {
                     // 流式响应完成后，添加AI消息到对话历史
                     String aiResponse = aiResponseBuilder.toString();
-                    chatHistoryService.addChatMessage(aiResponse, loginUser.getId(), appId, ChatHistoryMessageTypeEnum.AI.getValue());
+                    chatHistoryService.addChatMessage(aiResponse, loginUser.getId(), appId, ChatHistoryMessageTypeEnum.AI.getValue(), chatMode);
                 })
                 .doOnError(error -> {
                     // 如果AI回复失败，也要记录错误消息
                     String errorMessage = "AI回复失败: " + error.getMessage();
-                    chatHistoryService.addChatMessage(errorMessage, loginUser.getId(), appId, ChatHistoryMessageTypeEnum.AI.getValue());
+                    chatHistoryService.addChatMessage(errorMessage, loginUser.getId(), appId, ChatHistoryMessageTypeEnum.AI.getValue(), chatMode);
                 });
     }
 }

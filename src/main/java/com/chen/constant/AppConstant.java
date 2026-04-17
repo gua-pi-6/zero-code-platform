@@ -26,4 +26,13 @@ public interface AppConstant {
      */
     String CODE_DEPLOY_HOST = "http://localhost";
 
+    /**
+     * AI 聊天模式
+     */
+    String CHAT_MODE = "chat";
+
+    /**
+     * AI 编辑模式
+     */
+    String EDIT_MODE = "edit";
 }

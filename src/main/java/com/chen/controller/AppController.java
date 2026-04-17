@@ -123,12 +123,14 @@ public class AppController {
      * @param appId   应用 id
      * @param message 消息
      * @param request 请求
+     * @param chatMode    对话类型（生成代码对话 type=1，普通对话 type=0）
      * @return 代码
      */
     @GetMapping( value = "/chat/gen/code", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    @RateLimit(rate = 5, rateInterval = 60, limitType = RateLimitType.USER, message = "用户请求频率过快，请稍后重试")
+    @RateLimit(rate = 8, rateInterval = 60, limitType = RateLimitType.USER, message = "用户请求频率过快，请稍后重试")
     public Flux<ServerSentEvent<String>> chatToGenCode(@RequestParam Long appId,
                                                        @RequestParam String message,
+                                                       @RequestParam String chatMode,
                                                        HttpServletRequest request){
         // 参数效验
         ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用 id 不存在");
@@ -137,8 +139,10 @@ public class AppController {
         User loginUser = userService.getLoginUser(request);
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR, "用户未登录");
         // 调用服务生成代码
-        Flux<String> code = appService.chatToGenCode(message, appId, loginUser);
-
+        ThrowUtils.throwIf(chatMode == null, ErrorCode.PARAMS_ERROR, "对话类型不能为空");
+        // 生成代码对话时 type=1 普通对话时 type=0
+        Flux<String> code = appService.chatToGenCode(message, appId, loginUser, chatMode);
+        ThrowUtils.throwIf(code == null, ErrorCode.OPERATION_ERROR, "生成代码失败");
         // 转换为 ServerSentEvent 格式
         return code
                 .map(

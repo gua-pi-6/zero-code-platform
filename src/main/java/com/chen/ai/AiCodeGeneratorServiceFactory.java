@@ -2,6 +2,7 @@ package com.chen.ai;
 
 import com.chen.ai.guardrail.PromptSafetyInputGuardrail;
 import com.chen.ai.tools.*;
+import com.chen.constant.AppConstant;
 import com.chen.exception.BusinessException;
 import com.chen.exception.ErrorCode;
 import com.chen.model.enums.CodeGenTypeEnum;
@@ -26,18 +27,7 @@ import java.time.Duration;
 @Slf4j
 public class AiCodeGeneratorServiceFactory {
 
-    Cache<String, AiCodeGeneratorService> aiServiceCache = Caffeine.newBuilder()
-            .maximumSize(1000)
-            //expireAfterWrite和expireAfterAccess同时存在时，以expireAfterWrite为准
-            //最后一次写操作后经过指定时间过期
-            .expireAfterWrite(Duration.ofMinutes(30))
-            //最后一次读或写操作后经过指定时间过期
-            .expireAfterAccess(Duration.ofMinutes(30))
-            //监听缓存被移除
-            .removalListener((key, val, removalCause) -> {
-                log.info("缓存被移除，key: {}, removalCause: {}", key, removalCause);
-            })
-            .build();
+
     @Resource(name = "openAiChatModel")
     private ChatModel chatModel;
     @Resource
@@ -50,12 +40,21 @@ public class AiCodeGeneratorServiceFactory {
 
 
     /**
-     * 获取Caffeine缓存中的AI代码生成服务
-     * 如果缓存中不存在，则创建一个新的AI代码生成服务并缓存起来
+     * 创建 Caffeine 并缓存 AI 代码生成和聊天服务
      *
-     * @param appId 应用 ID
-     * @return AI 代码生成服务
      */
+    Cache<String, AiCodeGeneratorService> aiServiceCache = Caffeine.newBuilder()
+            .maximumSize(1000)
+            //expireAfterWrite和expireAfterAccess同时存在时，以expireAfterWrite为准
+            //最后一次写操作后经过指定时间过期
+            .expireAfterWrite(Duration.ofMinutes(30))
+            //最后一次读或写操作后经过指定时间过期
+            .expireAfterAccess(Duration.ofMinutes(30))
+            //监听缓存被移除
+            .removalListener((key, val, removalCause) -> {
+                log.info("缓存被移除，key: {}, removalCause: {}", key, removalCause);
+            })
+            .build();
 
     /**
      * 获取 appId 生成服务 (为了维护老逻辑, 默认返回HTML 项目生成服务)
@@ -67,13 +66,54 @@ public class AiCodeGeneratorServiceFactory {
         return aiServiceCache.get(appId.toString(), key -> createAiCodeGeneratorService(appId, CodeGenTypeEnum.HTML));
     }
 
+    /**
+     * 获取 appId 和 codeGenTypeEnum 对应的应用生成服务
+     *
+     * @param appId 应用 ID
+     * @param codeGenTypeEnum 生成类型
+     * @return AI 代码生成服务
+     */
     public AiCodeGeneratorService getAiCodeGeneratorService(Long appId, CodeGenTypeEnum codeGenTypeEnum) {
         return aiServiceCache.get(this.createCacheKey(appId, codeGenTypeEnum), key -> createAiCodeGeneratorService(appId, codeGenTypeEnum));
     }
 
+    /**
+     * 获取 appId 和 codeGenTypeEnum 对应的聊天生成服务
+     *
+     * @param appId 应用 ID
+     * @param codeGenTypeEnum 生成类型
+     * @return AI 代码生成服务
+     */
+    public AiCodeGeneratorService getAiDiscussionGeneratorService(Long appId, CodeGenTypeEnum codeGenTypeEnum) {
+        return aiServiceCache.get(this.createDiscussionCacheKey(appId, codeGenTypeEnum), key -> createAiDiscussionGeneratorService(appId));
+    }
 
     /**
-     * 获取 appId 生成服务
+     * 获取 appId 生成聊天服务
+     *
+     * @param appId 应用 ID
+     * @return AI 聊天服务
+     */
+    private AiCodeGeneratorService createAiDiscussionGeneratorService(Long appId) {
+        MessageWindowChatMemory windowChatMemory = MessageWindowChatMemory
+                .builder()
+                .id(appId + ":" + AppConstant.CHAT_MODE)
+                .chatMemoryStore(redisChatMemoryStore)
+                .maxMessages(100)
+                .build();
+        chatHistoryService.loadChatHistory(appId, windowChatMemory, 20, AppConstant.CHAT_MODE);
+
+        StreamingChatModel reasoningStreamingChatModel = SpringContextUtil.getBean("reasoningStreamingChatModelPrototype", StreamingChatModel.class);
+        return AiServices.builder(AiCodeGeneratorService.class)
+                        .streamingChatModel(reasoningStreamingChatModel)
+                        .chatMemoryProvider(memoryId -> windowChatMemory)
+                        .inputGuardrails(new PromptSafetyInputGuardrail())
+                        .build();
+    }
+
+
+    /**
+     * 获取 appId 生成应用服务
      *
      * @param appId 应用 ID
      * @return AI 代码生成服务
@@ -81,11 +121,11 @@ public class AiCodeGeneratorServiceFactory {
     private AiCodeGeneratorService createAiCodeGeneratorService(Long appId, CodeGenTypeEnum codeGenTypeEnum) {
         MessageWindowChatMemory windowChatMemory = MessageWindowChatMemory
                 .builder()
-                .id(appId)
+                .id(appId + ":" + AppConstant.EDIT_MODE)
                 .chatMemoryStore(redisChatMemoryStore)
                 .maxMessages(100)
                 .build();
-        chatHistoryService.loadChatHistory(appId, windowChatMemory, 20);
+        chatHistoryService.loadChatHistory(appId, windowChatMemory, 20, AppConstant.EDIT_MODE);
 
         return switch (codeGenTypeEnum) {
             // Vue 项目生成 使用 工具调用 和 流式推理模型
@@ -128,6 +168,10 @@ public class AiCodeGeneratorServiceFactory {
 
     private String createCacheKey(Long appId, CodeGenTypeEnum codeGenTypeEnum) {
         return appId + "_" + codeGenTypeEnum.getValue();
+    }
+
+    private String createDiscussionCacheKey(Long appId, CodeGenTypeEnum codeGenTypeEnum) {
+        return appId + "_" + codeGenTypeEnum.getValue() + "_discussion";
     }
 
 
