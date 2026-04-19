@@ -12,4 +12,7 @@ public class HtmlCodeResult {
 
     @Description("生成代码的描述")
     private String description;
+
+    @Description("是否保留当前已有 HTML 文件")
+    private boolean preserveExistingHtml;
 }

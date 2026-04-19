@@ -1,6 +1,9 @@
 package com.chen.core.handler;
 
+import com.chen.exception.ErrorCode;
+import com.chen.exception.ThrowUtils;
 import com.chen.model.entity.User;
+import com.chen.model.enums.AppChatModeEnum;
 import com.chen.model.enums.CodeGenTypeEnum;
 import com.chen.service.ChatHistoryService;
 import jakarta.annotation.Resource;
@@ -9,37 +12,41 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 /**
- * 流处理器执行器
- * 根据代码生成类型创建合适的流处理器：
- * 1. 传统的 Flux<String> 流（HTML、MULTI_FILE） -> SimpleTextStreamHandler
- * 2. TokenStream 格式的复杂流（VUE_PROJECT） -> JsonMessageStreamHandler
+ * 流处理分发器。
+ * 先按聊天模式分，再按代码生成类型分，避免 discussion 误入编辑链路。
  */
 @Slf4j
 @Component
 public class StreamHandlerExecutor {
 
     @Resource
+    private DiscussionStreamHandler discussionStreamHandler;
+
+    @Resource
     private JsonMessageStreamHandler jsonMessageStreamHandler;
 
-    /**
-     * 创建流处理器并处理聊天历史记录
-     *
-     * @param originFlux         原始流
-     * @param chatHistoryService 聊天历史服务
-     * @param appId              应用ID
-     * @param loginUser          登录用户
-     * @param codeGenType        代码生成类型
-     * @param chatMode
-     * @return 处理后的流
-     */
+    @Resource
+    private SimpleTextStreamHandler simpleTextStreamHandler;
+
     public Flux<String> doExecute(Flux<String> originFlux,
                                   ChatHistoryService chatHistoryService,
-                                  long appId, User loginUser, CodeGenTypeEnum codeGenType, String chatMode) {
+                                  long appId,
+                                  User loginUser,
+                                  CodeGenTypeEnum codeGenType,
+                                  String chatMode,
+                                  String sessionId) {
+        AppChatModeEnum chatModeEnum = AppChatModeEnum.getEnumByValue(chatMode);
+        ThrowUtils.throwIf(chatModeEnum == null, ErrorCode.APP_CHAT_MODE_INVALID, "对话模式错误");
+        // 讨论模式直接短路到 DiscussionStreamHandler，彻底隔离工具和保存逻辑。
+        if (AppChatModeEnum.CHAT.equals(chatModeEnum)) {
+            return discussionStreamHandler.handle(originFlux, chatHistoryService, appId, loginUser, chatMode, sessionId);
+        }
+        ThrowUtils.throwIf(codeGenType == null, ErrorCode.PARAMS_ERROR, "代码生成类型不存在");
         return switch (codeGenType) {
-            case VUE_PROJECT -> // 使用注入的组件实例
-                    jsonMessageStreamHandler.handle(originFlux, chatHistoryService, appId, loginUser, chatMode);
-            case HTML, MULTI_FILE -> // 简单文本处理器不需要依赖注入
-                    new SimpleTextStreamHandler().handle(originFlux, chatHistoryService, appId, loginUser, chatMode);
+            case VUE_PROJECT ->
+                    jsonMessageStreamHandler.handle(originFlux, chatHistoryService, appId, loginUser, chatMode, sessionId);
+            case HTML, MULTI_FILE ->
+                    simpleTextStreamHandler.handle(originFlux, chatHistoryService, appId, loginUser, chatMode, sessionId);
         };
     }
 }

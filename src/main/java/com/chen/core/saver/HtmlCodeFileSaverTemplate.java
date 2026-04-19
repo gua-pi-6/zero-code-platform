@@ -17,12 +17,19 @@ public class HtmlCodeFileSaverTemplate extends CodeFileSaverTemplate<HtmlCodeRes
 
     @Override
     protected void saveFile(String baseDirPath, HtmlCodeResult codeType) {
+        if (codeType.isPreserveExistingHtml()) {
+            return;
+        }
         writeSingleFile(baseDirPath, "index.html", codeType.getHtmlCode());
     }
 
     @Override
     protected void efficacyParams(HtmlCodeResult codeType) {
         super.efficacyParams(codeType);
+
+        if (codeType.isPreserveExistingHtml()) {
+            return;
+        }
 
         if (StrUtil.isBlank(codeType.getHtmlCode())) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "HTML代码不能为空");

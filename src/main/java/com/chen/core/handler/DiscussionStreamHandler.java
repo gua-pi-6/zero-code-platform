@@ -8,11 +8,12 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 /**
- * 纯文本流处理器，用于 HTML / MULTI_FILE 编辑链路。
+ * discussion 流处理器。
+ * 这里只做文本聚合和历史落库，不解析工具消息。
  */
 @Slf4j
 @Component
-public class SimpleTextStreamHandler {
+public class DiscussionStreamHandler {
 
     public Flux<String> handle(Flux<String> originFlux,
                                ChatHistoryService chatHistoryService,

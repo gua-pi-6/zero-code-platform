@@ -1,12 +1,15 @@
 package com.chen.service;
 
+/**
+ * 提供已部署应用的截图生成能力。
+ */
 public interface ScreenshotService {
 
     /**
-     * 生成并上传网页截图
+     * 为指定页面生成截图并上传。
      *
-     * @param webUrl 要截取截图的网页 URL
-     * @return 截图在 COS 中的访问 URL
+     * @param webUrl 目标页面地址
+     * @return 上传后的截图地址
      */
     String generateAndUploadScreenshot(String webUrl);
 }

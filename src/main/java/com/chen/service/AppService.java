@@ -1,45 +1,38 @@
 package com.chen.service;
 
 import com.chen.model.dto.app.AppQueryRequest;
+import com.chen.model.entity.App;
 import com.chen.model.entity.User;
 import com.chen.model.vo.AppVO;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
-import com.chen.model.entity.App;
-import reactor.core.publisher.Flux;
 
 import java.util.List;
 
 /**
- * 应用 服务层。
- *
- * @author 辰
+ * 提供应用查询、部署等核心能力。
  */
 public interface AppService extends IService<App> {
 
-
-
     /**
-     * 部署应用
+     * 为当前用户部署已生成的应用。
      *
-     * @param appId 应用id
-     * @param loginUser 登录用户
-     * @return 可访问的部署地址
+     * @param appId 应用 id
+     * @param loginUser 当前登录用户
+     * @return 部署地址
      */
     String deployApp(Long appId, User loginUser);
 
-
     /**
-     * 更新应用封面
+     * 异步生成并上传应用截图。
      *
-     * @param appId 应用id
-     * @param appAvatarUrl 应用封面访问url
-     * @return 是否更新成功
+     * @param appId 应用 id
+     * @param appAvatarUrl 应用预览地址
      */
     void generateAppScreenshotAsync(Long appId, String appAvatarUrl);
 
     /**
-     * 获取应用视图对象
+     * 将应用实体转换为视图对象。
      *
      * @param app 应用实体
      * @return 应用视图对象
@@ -47,29 +40,18 @@ public interface AppService extends IService<App> {
     AppVO getAppVO(App app);
 
     /**
-     * 获取应用查询包装器
+     * 构造应用列表查询条件。
      *
-     * @param appQueryRequest 应用查询请求
-     * @return 应用查询包装器
+     * @param appQueryRequest 查询请求
+     * @return 查询条件包装器
      */
     QueryWrapper getQueryWrapper(AppQueryRequest appQueryRequest);
 
-     /**
-     * 获取应用视图对象列表
+    /**
+     * 将应用实体列表转换为视图对象列表。
      *
      * @param appList 应用实体列表
      * @return 应用视图对象列表
      */
     List<AppVO> getAppVOList(List<App> appList);
-
-    /**
-     * 通过对话，生成代码
-     *
-     * @param message   用户消息
-     * @param appId     应用id
-     * @param loginUser 登录用户
-     * @param chatMode  聊天模式 （chat: 聊天模式, edit: 编辑模式）
-     * @return 生成的代码流
-     */
-    Flux<String> chatToGenCode(String message, Long appId, User loginUser, String chatMode);
 }

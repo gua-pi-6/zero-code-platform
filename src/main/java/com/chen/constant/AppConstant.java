@@ -1,5 +1,7 @@
 package com.chen.constant;
 
+import com.chen.model.enums.AppChatModeEnum;
+
 public interface AppConstant {
 
     /**
@@ -29,10 +31,10 @@ public interface AppConstant {
     /**
      * AI 聊天模式
      */
-    String CHAT_MODE = "chat";
+    String CHAT_MODE = AppChatModeEnum.CHAT.getValue();
 
     /**
      * AI 编辑模式
      */
-    String EDIT_MODE = "edit";
+    String EDIT_MODE = AppChatModeEnum.EDIT.getValue();
 }

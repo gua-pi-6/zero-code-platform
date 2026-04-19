@@ -17,6 +17,8 @@ public enum ErrorCode {
 
     // 客户端错误（4xx）
     PARAMS_ERROR(40000, "请求参数错误"),         // 请求参数错误
+    APP_EDIT_MODE_REQUIRED(40001, "当前模式不允许编辑"),
+    APP_CHAT_MODE_INVALID(40002, "模式切换参数错误"),
     NOT_LOGIN_ERROR(40100, "未登录"),           // 未登录错误
     NO_AUTH_ERROR(40101, "无权限"),             // 无权限错误
     NOT_FOUND_ERROR(40400, "请求数据不存在"),    // 资源不存在错误
