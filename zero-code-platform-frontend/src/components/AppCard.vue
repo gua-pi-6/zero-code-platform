@@ -30,8 +30,24 @@
         </template>
 
         <template v-else>
-          <span>{{ featured ? '精选案例' : '作品预览' }}</span>
-          <strong>{{ previewLetter }}</strong>
+          <div class="gallery-skeleton">
+            <div class="gallery-skeleton__line gallery-skeleton__line--top"></div>
+            <div class="gallery-skeleton__layout">
+              <div class="gallery-skeleton__sidebar">
+                <div class="gallery-skeleton__avatar">
+                  <img src="@/assets/logo.png" alt="NoCode" />
+                </div>
+                <div class="gallery-skeleton__sidebar-line gallery-skeleton__sidebar-line--short"></div>
+                <div class="gallery-skeleton__sidebar-line"></div>
+              </div>
+              <div class="gallery-skeleton__content">
+                <div class="gallery-skeleton__line"></div>
+                <div class="gallery-skeleton__line"></div>
+                <div class="gallery-skeleton__line gallery-skeleton__line--short"></div>
+                <div class="gallery-skeleton__block"></div>
+              </div>
+            </div>
+          </div>
         </template>
       </div>
 
@@ -41,29 +57,35 @@
         </button>
       </div>
 
-      <div v-else class="gallery-badges">
-        <span v-if="featured" class="gallery-badge gallery-badge--accent">精选</span>
-        <span v-if="app.deployKey" class="gallery-badge">已部署</span>
-      </div>
+      <template v-else>
+        <div class="gallery-overlay">
+          <button type="button" class="gallery-overlay__button" @click.stop="handleViewWork">
+            <ReadOutlined />
+            <span>预览</span>
+          </button>
+        </div>
+
+        <div class="gallery-badges">
+          <span v-if="featured" class="gallery-badge gallery-badge--accent">精选</span>
+          <span v-if="app.deployKey" class="gallery-badge">已部署</span>
+        </div>
+      </template>
     </div>
 
-    <div class="app-body">
+    <div class="app-body" :class="{ 'app-body--gallery': !isWorkspaceCard }">
       <template v-if="isWorkspaceCard">
         <h3 class="workspace-title">{{ app.appName || '新会话' }}</h3>
-        <p class="workspace-time">创建于 {{ timeLabel }}</p>
+        <p class="workspace-time">创建于 {{ workspaceTimeLabel }}</p>
       </template>
 
       <template v-else>
         <div class="gallery-info">
-          <a-avatar class="gallery-avatar" :src="app.user?.userAvatar" :size="34">
+          <a-avatar class="gallery-avatar" :src="app.user?.userAvatar" :size="36">
             {{ app.user?.userName?.charAt(0) || 'U' }}
           </a-avatar>
           <div class="gallery-copy">
             <h3 class="gallery-title">{{ app.appName || '未命名应用' }}</h3>
-            <p class="gallery-meta">
-              <span>{{ authorLabel }}</span>
-              <span>{{ dateLabel }}</span>
-            </p>
+            <p class="gallery-meta">{{ authorLabel }} {{ galleryDateLabel }}</p>
           </div>
         </div>
       </template>
@@ -73,6 +95,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { ReadOutlined } from '@ant-design/icons-vue'
 import { toIdString } from '@/utils/id'
 import { formatDate, formatRelativeTime } from '@/utils/time'
 
@@ -95,15 +118,21 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 const isWorkspaceCard = computed(() => props.variant === 'workspace')
-const previewLetter = computed(() => props.app.appName?.charAt(0)?.toUpperCase() || 'N')
-const timeLabel = computed(
-  () => formatRelativeTime(props.app.updateTime || props.app.createTime) || '刚刚',
-)
-const dateLabel = computed(() => formatDate(props.app.updateTime || props.app.createTime) || '刚刚')
+const workspaceTimeLabel = computed(() => formatRelativeTime(props.app.createTime) || '刚刚')
+const galleryDateLabel = computed(() => formatDate(props.app.createTime) || '')
 const authorLabel = computed(() => props.app.user?.userName || '创作者')
 
 const handleViewChat = () => {
   emit('view-chat', toIdString(props.app.id) || undefined)
+}
+
+const handleViewWork = () => {
+  if (props.app.deployKey) {
+    emit('view-work', props.app)
+    return
+  }
+
+  handleViewChat()
 }
 </script>
 
@@ -157,26 +186,9 @@ const handleViewChat = () => {
 }
 
 .app-card--gallery .app-placeholder {
-  display: grid;
-  align-content: space-between;
+  display: block;
   padding: 18px;
   background: #ffffff;
-}
-
-.app-card--gallery .app-placeholder span {
-  color: rgba(20, 20, 19, 0.58);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.app-card--gallery .app-placeholder strong {
-  align-self: end;
-  color: rgba(20, 20, 19, 0.16);
-  font-family: var(--font-serif);
-  font-size: clamp(3rem, 6vw, 4.6rem);
-  line-height: 0.92;
 }
 
 .workspace-skeleton {
@@ -234,29 +246,137 @@ const handleViewChat = () => {
   border-radius: 10px;
 }
 
-.workspace-overlay {
+.gallery-skeleton {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+  background: rgba(246, 246, 244, 0.92);
+}
+
+.gallery-skeleton__line,
+.gallery-skeleton__sidebar,
+.gallery-skeleton__avatar,
+.gallery-skeleton__sidebar-line,
+.gallery-skeleton__block {
+  background: linear-gradient(90deg, rgba(226, 226, 226, 0.88), rgba(240, 240, 240, 0.94));
+}
+
+.gallery-skeleton__line {
+  height: 10px;
+  border-radius: 999px;
+}
+
+.gallery-skeleton__line--top {
+  width: 76%;
+  margin: 16px 16px 0;
+}
+
+.gallery-skeleton__line--short {
+  width: 42%;
+}
+
+.gallery-skeleton__layout {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 12px;
+  margin: 14px 12px 12px;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.gallery-skeleton__sidebar {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  gap: 12px;
+  min-height: 0;
+  padding: 12px 10px;
+  border-radius: 12px;
+}
+
+.gallery-skeleton__avatar {
+  display: grid;
+  place-items: center;
+  align-self: start;
+  width: 44px;
+  height: 44px;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.gallery-skeleton__avatar img {
+  width: 26px;
+  height: 26px;
+  border-radius: 10px;
+  opacity: 0.88;
+}
+
+.gallery-skeleton__sidebar-line {
+  height: 10px;
+  border-radius: 999px;
+}
+
+.gallery-skeleton__sidebar-line--short {
+  width: 74%;
+}
+
+.gallery-skeleton__content {
+  display: grid;
+  grid-template-rows: auto auto auto minmax(58px, 1fr);
+  gap: 10px;
+  min-height: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.gallery-skeleton__block {
+  height: auto;
+  min-height: 42px;
+  border-radius: 10px;
+}
+
+.workspace-overlay,
+.gallery-overlay {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: end;
   justify-content: center;
   padding: 14px;
-  background: rgba(20, 20, 19, 0.22);
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
-.app-card:hover .workspace-overlay {
+.workspace-overlay {
+  background: rgba(20, 20, 19, 0.22);
+}
+
+.gallery-overlay {
+  background: linear-gradient(180deg, rgba(220, 220, 220, 0.2) 0%, rgba(191, 191, 191, 0.48) 100%);
+}
+
+.app-card:hover .workspace-overlay,
+.app-card:hover .gallery-overlay {
   opacity: 1;
 }
 
-.workspace-overlay__button {
+.workspace-overlay__button,
+.gallery-overlay__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   width: 100%;
   min-height: 42px;
   border: none;
   border-radius: 12px;
   color: var(--text-strong);
   background: rgba(255, 255, 255, 0.94);
+  font-size: 0.96rem;
+  line-height: 1;
   cursor: pointer;
 }
 
@@ -266,6 +386,11 @@ const handleViewChat = () => {
   left: 12px;
   display: flex;
   gap: 8px;
+  transition: opacity 0.2s ease;
+}
+
+.app-card:hover .gallery-badges {
+  opacity: 0;
 }
 
 .gallery-badge {
@@ -290,56 +415,58 @@ const handleViewChat = () => {
   gap: 6px;
 }
 
+.app-body--gallery {
+  gap: 0;
+}
+
 .workspace-title {
   margin: 0;
   color: var(--text-strong);
   font-size: 1rem;
   font-weight: 700;
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
 .workspace-time {
   margin: 0;
-  color: var(--text-subtle);
+  color: #9d9890;
   font-size: 0.9rem;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .gallery-info {
-  display: flex;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
   align-items: center;
   gap: 10px;
 }
 
 .gallery-avatar {
   flex: none;
-  box-shadow: 0 8px 18px rgba(20, 20, 19, 0.08);
 }
 
 .gallery-copy {
   display: grid;
   min-width: 0;
-  gap: 2px;
+  gap: 4px;
 }
 
 .gallery-title {
   margin: 0;
   overflow: hidden;
-  color: var(--text-strong);
+  color: #1b1b1a;
   font-size: 1rem;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .gallery-meta {
-  display: flex;
-  gap: 8px;
   margin: 0;
-  color: var(--text-subtle);
-  font-size: 0.88rem;
-  line-height: 1.5;
-  white-space: nowrap;
+  color: #8d887f;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
+
 </style>

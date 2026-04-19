@@ -19,13 +19,13 @@
       </template>
 
       <template v-else>
-        <div>
+        <div v-if="!isLoginPage">
           <p class="footer-title">零代码应用平台</p>
-          <p class="footer-copy">用提示词、对话、预览和部署，把一个想法收敛成可运行的应用。</p>
+          <p class="footer-copy">用提示词、对话、预览和部署，把一个想法收敛成可运行的应用</p>
         </div>
         <p class="footer-link">
-          <a href="https://www.codefather.cn" target="_blank" rel="noopener noreferrer">
-            CodeFather 出品
+          <a href="https://guapistudio.com/" target="_blank" rel="noopener noreferrer">
+            Gua Pi 出品
           </a>
         </p>
       </template>
@@ -39,6 +39,7 @@ import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const isHomePage = computed(() => route.path === '/')
+const isLoginPage = computed(() => route.path === '/user/login')
 </script>
 
 <style scoped>

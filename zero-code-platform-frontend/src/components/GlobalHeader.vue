@@ -94,10 +94,26 @@ const loginUserStore = useLoginUserStore()
 const isAdmin = computed(() => loginUserStore.loginUser.userRole === 'admin')
 const hasLoginUser = computed(() => hasId(loginUserStore.loginUser.id))
 const isHomePage = computed(() => route.path === '/')
+const canShowAdminNav = computed(() => hasLoginUser.value && isAdmin.value)
+
+const adminNavItems: NavItem[] = [
+  {
+    key: '/admin/appManage',
+    label: '应用管理',
+  },
+  {
+    key: '/admin/chatManage',
+    label: '对话管理',
+  },
+  {
+    key: '/admin/userManage',
+    label: '用户管理',
+  },
+]
 
 const navItems = computed<NavItem[]>(() => {
   if (isHomePage.value) {
-    return []
+    return canShowAdminNav.value ? adminNavItems : []
   }
 
   const items: NavItem[] = [
@@ -107,21 +123,8 @@ const navItems = computed<NavItem[]>(() => {
     },
   ]
 
-  if (isAdmin.value) {
-    items.push(
-      {
-        key: '/admin/appManage',
-        label: '应用管理',
-      },
-      {
-        key: '/admin/chatManage',
-        label: '对话管理',
-      },
-      {
-        key: '/admin/userManage',
-        label: '用户管理',
-      },
-    )
+  if (canShowAdminNav.value) {
+    items.push(...adminNavItems)
   }
 
   return items
@@ -251,26 +254,30 @@ const doLogout = async () => {
   display: flex;
   flex-wrap: wrap;
   justify-content: start;
-  gap: 12px;
+  gap: 36.8px;
+  margin-left: 8.8px;
 }
 
 .nav-link {
-  min-height: 38px;
-  padding: 0 12px;
+  min-height: auto;
+  padding: 0;
   border: 0;
-  border-radius: 999px;
-  color: var(--text-muted);
+  border-radius: 0;
+  color: #5f5b54;
   background: transparent;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.4;
   cursor: pointer;
   transition:
     color 0.2s ease,
-    background-color 0.2s ease;
+    opacity 0.2s ease;
 }
 
 .nav-link:hover,
 .nav-link--active {
-  color: var(--text-strong);
-  background: rgba(20, 20, 19, 0.05);
+  color: #141413;
+  background: transparent;
 }
 
 .header-actions {

@@ -2,7 +2,6 @@
 import { onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
-import { ArrowUpOutlined } from '@ant-design/icons-vue'
 import { addApp, listGoodAppVoByPage, listMyAppVoByPage } from '@/api/appController'
 import AppCard from '@/components/AppCard.vue'
 import { getDeployUrl } from '@/config/env'
@@ -30,8 +29,6 @@ const featuredAppsPage = reactive({
 })
 
 const heroSuggestions = ['波普风电商页面', '企业网站', '电商运营后台', '暗黑话题社区']
-const placeholderWorks = Array.from({ length: 8 }, (_, index) => index)
-
 const setPrompt = (prompt: string) => {
   userPrompt.value = `使用 NoCode 创建一个${prompt}，整体视觉精致，保留完整业务逻辑，并支持继续迭代。`
 }
@@ -184,7 +181,17 @@ onMounted(() => {
 
           <div class="composer-footer">
             <button type="button" class="composer-submit" :disabled="creating" @click="createApp">
-              <ArrowUpOutlined />
+              <span class="composer-submit__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 19.5V4.5M12 4.5L5.8 10.7M12 4.5L18.2 10.7"
+                    stroke="currentColor"
+                    stroke-width="3.2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
             </button>
           </div>
         </div>
@@ -221,23 +228,9 @@ onMounted(() => {
             />
           </div>
 
-          <div v-else class="works-grid works-grid--placeholder">
-            <div v-for="item in placeholderWorks" :key="item" class="placeholder-card">
-              <div class="placeholder-card__visual">
-                <div class="placeholder-card__line placeholder-card__line--short"></div>
-                <div class="placeholder-card__layout">
-                  <div class="placeholder-card__avatar"></div>
-                  <div class="placeholder-card__content">
-                    <div class="placeholder-card__line"></div>
-                    <div class="placeholder-card__line"></div>
-                    <div class="placeholder-card__line placeholder-card__line--mini"></div>
-                    <div class="placeholder-card__block"></div>
-                  </div>
-                </div>
-              </div>
-              <strong>新会话</strong>
-              <span>创建于 刚刚</span>
-            </div>
+          <div v-else class="empty-state works-empty">
+            <strong>你还没有创建应用</strong>
+            <p>输入一句需求，创建你的第一个应用后，这里才会显示真实作品。</p>
           </div>
         </div>
 
@@ -418,8 +411,8 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   border: none;
   border-radius: 999px;
   color: #ffffff;
@@ -428,6 +421,20 @@ onMounted(() => {
   transition:
     transform 0.2s ease,
     background-color 0.2s ease;
+}
+
+.composer-submit__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  line-height: 1;
+}
+
+.composer-submit__icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .composer-submit:hover:not(:disabled) {
@@ -505,77 +512,30 @@ onMounted(() => {
   gap: 18px;
 }
 
-.works-grid--placeholder {
-  gap: 22px 18px;
+.empty-state {
+  padding: 52px 28px;
+  border: 1px solid rgba(20, 20, 19, 0.08);
+  border-radius: 18px;
+  background: #ffffff;
+  text-align: center;
 }
 
-.placeholder-card {
-  display: grid;
-  gap: 10px;
-}
-
-.placeholder-card strong,
-.placeholder-card span {
+.empty-state strong {
   display: block;
-}
-
-.placeholder-card strong {
   color: var(--text-strong);
   font-size: 1rem;
+  font-weight: 700;
 }
 
-.placeholder-card span {
+.empty-state p {
+  margin: 10px 0 0;
   color: var(--text-subtle);
   font-size: 0.92rem;
+  line-height: 1.7;
 }
 
-.placeholder-card__visual {
-  padding: 14px;
-  border: 1px solid rgba(20, 20, 19, 0.08);
-  border-radius: 14px;
-  background: #ffffff;
-}
-
-.placeholder-card__line,
-.placeholder-card__avatar,
-.placeholder-card__block {
-  background: linear-gradient(90deg, rgba(226, 226, 226, 0.84), rgba(240, 240, 240, 0.92));
-}
-
-.placeholder-card__line {
-  height: 10px;
-  border-radius: 999px;
-}
-
-.placeholder-card__line--short {
-  width: 72%;
-}
-
-.placeholder-card__line--mini {
-  width: 48%;
-}
-
-.placeholder-card__layout {
-  display: grid;
-  grid-template-columns: 54px 1fr;
-  gap: 12px;
-  margin-top: 14px;
-}
-
-.placeholder-card__avatar {
-  width: 54px;
-  height: 92px;
-  border-radius: 14px;
-}
-
-.placeholder-card__content {
-  display: grid;
-  gap: 10px;
-}
-
-.placeholder-card__block {
-  height: 42px;
-  border-radius: 10px;
+.works-empty {
+  padding: 64px 28px;
 }
 
 .gallery-empty {

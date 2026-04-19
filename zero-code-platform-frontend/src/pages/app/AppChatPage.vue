@@ -193,8 +193,8 @@
         >
           <div class="preview-stage">
             <div v-if="!previewUrl && !isGenerating" class="preview-placeholder">
-              <strong>预览将在这里出现</strong>
-              <p>先完成一次生成，随后就可以在这里直接查看页面效果并继续细化。</p>
+              <strong>欢迎页!</strong>
+              <p>开始构建你的神奇应用!</p>
             </div>
             <div v-else-if="isGenerating" class="preview-loading">
               <a-spin size="large" />
@@ -717,8 +717,10 @@ const fetchAppInfo = async (reloadHistory = true) => {
         await scrollToBottom()
       }
 
-      if (messages.value.length >= 2 || appInfo.value.deployKey) {
+      if (hasRenderablePreview()) {
         updatePreview()
+      } else {
+        clearPreview()
       }
 
       if (
@@ -1026,6 +1028,17 @@ const shouldRefreshPreviewAfterEdit = (aiContent: string) => {
   return CODE_SIGNAL_PATTERN.test(aiContent) || FILE_PATH_PATTERN.test(aiContent)
 }
 
+function hasRenderablePreview() {
+  if (appInfo.value?.deployKey) {
+    return true
+  }
+
+  return messages.value.some(
+    (messageItem) =>
+      messageItem.type === 'ai' && shouldRefreshPreviewAfterEdit(messageItem.content || ''),
+  )
+}
+
 const readUnexpectedResponseMessage = async (response: Response) => {
   const contentType = response.headers.get('content-type') || ''
 
@@ -1295,6 +1308,11 @@ const updatePreview = () => {
   if (!nextPreviewUrl) return
 
   previewUrl.value = nextPreviewUrl
+  previewReady.value = false
+}
+
+const clearPreview = () => {
+  previewUrl.value = ''
   previewReady.value = false
 }
 
@@ -1979,16 +1997,19 @@ onUnmounted(() => {
 }
 
 .preview-placeholder strong {
-  color: var(--text-strong);
+  color: #0f2347;
   font-family: var(--font-serif);
-  font-size: 2rem;
+  font-size: clamp(2.8rem, 5vw, 4rem);
+  font-weight: 700;
+  line-height: 1.08;
 }
 
 .preview-placeholder p,
 .preview-loading p {
-  margin: 12px 0 0;
-  color: var(--text-muted);
-  line-height: 1.8;
+  margin: 18px 0 0;
+  color: #415979;
+  font-size: 1.05rem;
+  line-height: 1.7;
 }
 
 .preview-iframe {

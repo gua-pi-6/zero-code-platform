@@ -5,16 +5,18 @@
       {
         'basic-layout--workspace': isWorkspacePage,
         'basic-layout--home': isHomePage,
+        'basic-layout--login': isAuthPage,
       },
     ]"
   >
-    <GlobalHeader v-if="!isWorkspacePage" :compact="isWorkspacePage" />
+    <GlobalHeader v-if="!isWorkspacePage && !isAuthPage" :compact="isWorkspacePage" />
     <a-layout-content
       :class="[
         'main-content',
         {
           'main-content--workspace': isWorkspacePage,
           'main-content--home': isHomePage,
+          'main-content--login': isAuthPage,
         },
       ]"
     >
@@ -34,6 +36,9 @@ const route = useRoute()
 
 const isWorkspacePage = computed(() => route.path.startsWith('/app/chat/'))
 const isHomePage = computed(() => route.path === '/')
+const isAuthPage = computed(
+  () => route.path === '/user/login' || route.path === '/user/register',
+)
 const showFooter = computed(() => !isWorkspacePage.value && !isHomePage.value)
 </script>
 
@@ -60,6 +65,14 @@ const showFooter = computed(() => !isWorkspacePage.value && !isHomePage.value)
   padding-top: 0;
 }
 
+.main-content--login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  padding-top: 0;
+}
+
 @media (max-width: 768px) {
   .main-content {
     padding-top: 14px;
@@ -67,6 +80,11 @@ const showFooter = computed(() => !isWorkspacePage.value && !isHomePage.value)
 
   .main-content--home {
     padding-top: 0;
+  }
+
+  .main-content--login {
+    min-height: auto;
+    align-items: stretch;
   }
 }
 </style>
