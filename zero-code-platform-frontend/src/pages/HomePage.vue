@@ -493,7 +493,8 @@ onMounted(() => {
   margin: 0;
   color: var(--text-strong);
   font-family: var(--font-serif);
-  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-size: clamp(1.08rem, 1.8vw, 1.44rem);
+  font-weight: 700;
   line-height: 1.12;
 }
 
