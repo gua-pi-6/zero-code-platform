@@ -14,6 +14,11 @@ declare namespace API {
     appId?: string
   }
 
+  type AppChatModeSwitchRequest = {
+    appId?: string
+    targetMode?: 'chat' | 'edit'
+  }
+
   type AppQueryRequest = {
     pageNum?: number
     pageSize?: number
@@ -131,11 +136,6 @@ declare namespace API {
     appId?: string
     userId?: string
     lastCreateTime?: string
-  }
-
-  type chatToGenCodeParams = {
-    appId: string
-    message: string
   }
 
   type DeleteRequest = {

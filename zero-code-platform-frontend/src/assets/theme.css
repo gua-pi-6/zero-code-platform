@@ -1,23 +1,23 @@
 :root {
-  --app-bg: #f5f4ed;
-  --surface-base: #faf9f5;
-  --surface-raised: rgba(255, 255, 255, 0.94);
-  --surface-muted: #f1efe7;
+  --app-bg: #ffffff;
+  --surface-base: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-muted: #ffffff;
   --surface-dark: #141413;
   --surface-dark-soft: #30302e;
   --text-strong: #141413;
   --text-default: #3d3d3a;
   --text-muted: #5e5d59;
   --text-subtle: #87867f;
-  --border-light: #f0eee6;
-  --border-strong: #e8e6dc;
-  --accent: #0071e3;
-  --accent-strong: #005fcc;
-  --accent-soft: rgba(0, 113, 227, 0.08);
-  --accent-warm: #c96442;
-  --success: #5d7a5b;
-  --warning: #c98a45;
-  --error: #b53333;
+  --border-light: #ecebe7;
+  --border-strong: #dfdfdc;
+  --accent: #141413;
+  --accent-strong: #2d2d2a;
+  --accent-soft: rgba(20, 20, 19, 0.06);
+  --accent-warm: #141413;
+  --success: #5e5d59;
+  --warning: #5e5d59;
+  --error: #5e5d59;
   --ring-soft: 0 0 0 1px rgba(77, 76, 72, 0.08);
   --shadow-soft: 0 8px 24px rgba(20, 20, 19, 0.035);
   --shadow-large: 0 24px 72px rgba(20, 20, 19, 0.06);
@@ -65,7 +65,7 @@ select {
 }
 
 ::selection {
-  background: rgba(201, 100, 66, 0.18);
+  background: rgba(20, 20, 19, 0.12);
   color: var(--text-strong);
 }
 
@@ -269,17 +269,17 @@ select {
 }
 
 .status-tag--success {
-  background: rgba(93, 122, 91, 0.12);
+  background: rgba(20, 20, 19, 0.06);
   color: var(--success);
 }
 
 .status-tag--warning {
-  background: rgba(201, 138, 69, 0.14);
-  color: #9b651f;
+  background: rgba(20, 20, 19, 0.06);
+  color: var(--warning);
 }
 
 .status-tag--accent {
-  background: rgba(201, 100, 66, 0.14);
+  background: rgba(20, 20, 19, 0.06);
   color: var(--accent);
 }
 
@@ -311,7 +311,7 @@ select {
 
 .ant-btn-default:not(:disabled):hover {
   color: var(--text-strong);
-  border-color: rgba(0, 113, 227, 0.2);
+  border-color: rgba(29, 29, 31, 0.18);
   background: #ffffff;
 }
 
@@ -367,7 +367,7 @@ select {
 .ant-input-number-focused,
 .ant-select-focused .ant-select-selector,
 .ant-picker-focused {
-  border-color: #3898ec !important;
+  border-color: rgba(29, 29, 31, 0.18) !important;
 }
 
 .ant-input-textarea textarea {
@@ -412,15 +412,15 @@ select {
 
 .ant-alert {
   border-radius: 18px;
-  border-color: rgba(56, 152, 236, 0.18);
-  background: rgba(0, 113, 227, 0.06);
+  border-color: var(--border-light);
+  background: #ffffff;
 }
 
 .ant-modal-content {
   border: 1px solid var(--border-light);
   border-radius: 24px;
   padding: 20px;
-  background: #fbfaf6;
+  background: #ffffff;
   box-shadow: var(--shadow-large);
 }
 
@@ -449,7 +449,7 @@ select {
 .ant-table-wrapper .ant-table-container {
   border: 1px solid var(--border-light);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.82);
+  background: #ffffff;
   overflow: hidden;
 }
 
@@ -459,7 +459,7 @@ select {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  background: #f7f6f2 !important;
+  background: #ffffff !important;
   border-bottom-color: var(--border-strong) !important;
 }
 
@@ -482,7 +482,7 @@ select {
 
 .ant-pagination .ant-pagination-item-active {
   border-color: var(--accent);
-  background: rgba(201, 100, 66, 0.12);
+  background: rgba(20, 20, 19, 0.06);
 }
 
 .ant-pagination .ant-pagination-item-active a {

@@ -177,11 +177,11 @@ const doLogout = async () => {
   width: var(--content-width-wide);
   margin: 0 auto;
   padding: 12px 22px;
-  border: 1px solid rgba(255, 255, 255, 0.24);
+  border: 1px solid rgba(20, 20, 19, 0.08);
   border-radius: 26px;
-  background: rgba(255, 255, 255, 0.54);
+  background: #ffffff;
   box-shadow:
-    0 18px 50px rgba(41, 54, 82, 0.08),
+    0 18px 50px rgba(20, 20, 19, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.56);
   backdrop-filter: saturate(180%) blur(22px);
   overflow: hidden;
@@ -189,24 +189,7 @@ const doLogout = async () => {
 
 .header-shell::before,
 .header-shell::after {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 180px;
-  pointer-events: none;
-  content: '';
-  filter: blur(18px);
-  opacity: 0.82;
-}
-
-.header-shell::before {
-  left: -40px;
-  background: linear-gradient(90deg, rgba(128, 168, 255, 0.35), rgba(128, 168, 255, 0));
-}
-
-.header-shell::after {
-  right: -40px;
-  background: linear-gradient(90deg, rgba(255, 126, 95, 0), rgba(225, 67, 150, 0.34));
+  content: none;
 }
 
 .header--home {
@@ -227,9 +210,12 @@ const doLogout = async () => {
 }
 
 .logo {
+  display: block;
   width: 42px;
   height: 42px;
   border-radius: 14px;
+  background: transparent;
+  box-shadow: none;
   object-fit: cover;
 }
 
@@ -284,7 +270,7 @@ const doLogout = async () => {
 .nav-link:hover,
 .nav-link--active {
   color: var(--text-strong);
-  background: rgba(255, 255, 255, 0.38);
+  background: rgba(20, 20, 19, 0.05);
 }
 
 .header-actions {
@@ -299,15 +285,23 @@ const doLogout = async () => {
 .header--home .header-shell {
   width: 100%;
   margin: 0;
-  padding: 18px 32px;
-  border-top: none;
-  border-right: none;
-  border-left: none;
+  min-height: 74px;
+  padding: 12px clamp(140.4px, 15.6vw, 218.4px) 10px;
+  border: none;
   border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  overflow: visible;
+}
+
+.header--home .header-shell::before,
+.header--home .header-shell::after {
+  content: none;
 }
 
 .header--home .header-actions {
-  padding-right: 28px;
+  padding-right: 0;
 }
 
 .login-button {
@@ -327,8 +321,8 @@ const doLogout = async () => {
   min-height: 34px;
   padding: 0 12px;
   border-radius: 999px;
-  color: #8dc2ff;
-  background: rgba(0, 113, 227, 0.16);
+  color: var(--text-muted);
+  background: rgba(20, 20, 19, 0.06);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -344,7 +338,7 @@ const doLogout = async () => {
   border: 1px solid rgba(20, 20, 19, 0.08);
   border-radius: 999px;
   color: var(--text-strong);
-  background: rgba(255, 255, 255, 0.66);
+  background: #ffffff;
   cursor: pointer;
 }
 
@@ -399,7 +393,8 @@ const doLogout = async () => {
   }
 
   .header--home .header-shell {
-    padding: 16px 18px;
+    min-height: 64px;
+    padding: 10px 70.2px 8px;
     border-radius: 0;
   }
 

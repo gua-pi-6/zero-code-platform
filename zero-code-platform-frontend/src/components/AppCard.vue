@@ -117,8 +117,8 @@ const handleViewChat = () => {
 .app-visual {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(232, 230, 220, 0.96);
-  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(20, 20, 19, 0.08);
+  background: #ffffff;
   transition:
     transform 0.24s ease,
     box-shadow 0.24s ease,
@@ -127,8 +127,8 @@ const handleViewChat = () => {
 
 .app-card:hover .app-visual {
   transform: translateY(-4px);
-  border-color: rgba(201, 100, 66, 0.24);
-  box-shadow: 0 22px 42px rgba(28, 39, 68, 0.08);
+  border-color: rgba(20, 20, 19, 0.14);
+  box-shadow: 0 22px 42px rgba(20, 20, 19, 0.08);
 }
 
 .app-card--workspace .app-visual {
@@ -160,10 +160,7 @@ const handleViewChat = () => {
   display: grid;
   align-content: space-between;
   padding: 18px;
-  background:
-    radial-gradient(circle at 18% 22%, rgba(157, 248, 226, 0.4), transparent 0 22%),
-    radial-gradient(circle at 82% 78%, rgba(82, 118, 255, 0.28), transparent 0 32%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(239, 244, 255, 0.98));
+  background: #ffffff;
 }
 
 .app-card--gallery .app-placeholder span {
@@ -284,8 +281,8 @@ const handleViewChat = () => {
 }
 
 .gallery-badge--accent {
-  color: #0f6c58;
-  background: rgba(157, 248, 226, 0.28);
+  color: var(--text-default);
+  background: rgba(20, 20, 19, 0.06);
 }
 
 .app-body {

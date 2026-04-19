@@ -68,6 +68,19 @@ const createApp = async () => {
   }
 }
 
+const handlePromptKeydown = (event: KeyboardEvent) => {
+  if (event.key !== 'Enter' || event.isComposing) {
+    return
+  }
+
+  if (event.shiftKey) {
+    return
+  }
+
+  event.preventDefault()
+  createApp()
+}
+
 const loadMyApps = async () => {
   if (!hasId(loginUserStore.loginUser.id)) {
     myApps.value = []
@@ -166,6 +179,7 @@ onMounted(() => {
             placeholder="使用 NoCode 创建一个高效的小型业务应用、精美网站或运营后台。"
             :auto-size="{ minRows: 5, maxRows: 7 }"
             :maxlength="1000"
+            @keydown="handlePromptKeydown"
           />
 
           <div class="composer-footer">
@@ -263,6 +277,7 @@ onMounted(() => {
   position: relative;
   padding-bottom: 64px;
   overflow: hidden;
+  background: #ffffff;
 }
 
 .home-page::before,
@@ -275,28 +290,11 @@ onMounted(() => {
 }
 
 .home-page::before {
-  top: 8px;
-  width: 120vw;
-  height: 900px;
-  background:
-    radial-gradient(circle at 22% 62%, rgba(171, 255, 237, 0.55), transparent 0 26%),
-    radial-gradient(circle at 76% 32%, rgba(178, 255, 252, 0.46), transparent 0 20%),
-    radial-gradient(circle at 84% 78%, rgba(76, 117, 255, 0.44), transparent 0 28%),
-    radial-gradient(circle at 50% 84%, rgba(125, 213, 255, 0.22), transparent 0 22%);
-  filter: blur(10px);
+  content: none;
 }
 
 .home-page::after {
-  top: 0;
-  width: 100vw;
-  height: 100%;
-  background: linear-gradient(
-    180deg,
-    rgba(245, 244, 237, 0.02) 0%,
-    rgba(245, 244, 237, 0.26) 34%,
-    rgba(245, 244, 237, 0.92) 74%,
-    rgba(245, 244, 237, 0.98) 100%
-  );
+  content: none;
 }
 
 .home-hero,
@@ -306,18 +304,19 @@ onMounted(() => {
 }
 
 .home-hero {
-  padding: 68px 0 56px;
+  padding: 104px 0 118px;
 }
 
 .hero-shell {
   display: grid;
-  gap: 24px;
+  gap: 44px;
   justify-items: center;
 }
 
 .hero-copy {
   display: grid;
   gap: 10px;
+  padding-top: clamp(1.32rem, 2.88vw, 2.4rem);
   text-align: center;
 }
 
@@ -325,74 +324,106 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 12px;
   margin: 0;
   color: var(--text-strong);
   font-family: var(--font-serif);
-  font-size: clamp(2.8rem, 6vw, 4.8rem);
+  font-size: clamp(1.32rem, 2.88vw, 2.4rem);
+  font-weight: 700;
   line-height: 1.04;
   letter-spacing: -0.04em;
 }
 
 .hero-title__mark {
-  width: clamp(50px, 5vw, 62px);
-  height: clamp(50px, 5vw, 62px);
-  border-radius: 20px;
-  box-shadow: 0 12px 28px rgba(29, 53, 86, 0.12);
+  display: block;
+  width: clamp(40px, 4vw, 48px);
+  height: clamp(40px, 4vw, 48px);
+  border-radius: 16px;
+  background: transparent;
+  box-shadow: none;
 }
 
 .hero-subtitle {
   margin: 0;
   color: var(--text-muted);
-  font-size: 1.06rem;
-  line-height: 1.8;
+  font-size: 1rem;
+  line-height: 1.72;
 }
 
 .hero-composer {
+  position: relative;
   width: min(760px, 100%);
-  padding: 18px 18px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  border-radius: 30px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.42) inset,
-    0 28px 72px rgba(43, 60, 93, 0.12);
-  backdrop-filter: blur(16px);
+  padding: 16px 16px 18px;
+  border: 1px solid rgba(20, 20, 19, 0.08);
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow: 0 16px 42px rgba(20, 20, 19, 0.05);
 }
 
-:deep(.prompt-input textarea) {
-  min-height: 160px !important;
-  padding: 18px 20px !important;
+.hero-composer:focus-within {
+  border-color: rgba(20, 20, 19, 0.08);
+  box-shadow: 0 16px 42px rgba(20, 20, 19, 0.05);
+}
+
+:deep(.prompt-input) {
+  display: block;
+  padding: 0 !important;
+  background: transparent !important;
   border: none !important;
-  border-radius: 24px !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+:deep(.prompt-input:hover),
+:deep(.prompt-input:focus),
+:deep(.prompt-input:focus-within) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:deep(.prompt-input .ant-input),
+:deep(.prompt-input textarea) {
+  min-height: 144px !important;
+  padding: 8px 68px 44px 14px !important;
+  border: none !important;
+  border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
   color: var(--text-strong) !important;
   font-size: 1rem;
-  line-height: 1.8;
+  line-height: 1.75;
   resize: none !important;
 }
 
+:deep(.prompt-input .ant-input:focus),
+:deep(.prompt-input textarea:focus) {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+:deep(.prompt-input .ant-input::placeholder),
 :deep(.prompt-input textarea::placeholder) {
-  color: #98a0b8;
+  color: #b3afa8;
 }
 
 .composer-footer {
-  display: flex;
-  justify-content: end;
-  margin-top: 10px;
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
 }
 
 .composer-submit {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border: none;
   border-radius: 999px;
   color: #ffffff;
-  background: #b5b8c1;
+  background: var(--text-strong);
   cursor: pointer;
   transition:
     transform 0.2s ease,
@@ -400,7 +431,7 @@ onMounted(() => {
 }
 
 .composer-submit:hover:not(:disabled) {
-  background: var(--accent-warm);
+  background: #262624;
   transform: translateY(-1px);
 }
 
@@ -419,10 +450,10 @@ onMounted(() => {
 .hero-chip {
   min-height: 38px;
   padding: 0 14px;
-  border: 1px solid rgba(232, 230, 220, 0.96);
+  border: 1px solid rgba(20, 20, 19, 0.08);
   border-radius: 14px;
   color: var(--text-default);
-  background: rgba(255, 255, 255, 0.72);
+  background: #ffffff;
   cursor: pointer;
   transition:
     border-color 0.2s ease,
@@ -430,7 +461,7 @@ onMounted(() => {
 }
 
 .hero-chip:hover {
-  border-color: rgba(201, 100, 66, 0.24);
+  border-color: rgba(20, 20, 19, 0.16);
   transform: translateY(-1px);
 }
 
@@ -440,10 +471,10 @@ onMounted(() => {
 
 .showcase-panel {
   padding: 26px 26px 30px;
-  border: 1px solid rgba(240, 238, 230, 0.96);
+  border: 1px solid rgba(20, 20, 19, 0.08);
   border-radius: 34px;
-  background: rgba(250, 249, 245, 0.9);
-  box-shadow: 0 24px 72px rgba(34, 47, 82, 0.08);
+  background: #ffffff;
+  box-shadow: 0 18px 48px rgba(20, 20, 19, 0.06);
 }
 
 .showcase-block + .showcase-block {
@@ -499,15 +530,15 @@ onMounted(() => {
 
 .placeholder-card__visual {
   padding: 14px;
-  border: 1px solid rgba(220, 220, 220, 0.7);
+  border: 1px solid rgba(20, 20, 19, 0.08);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.4);
+  background: #ffffff;
 }
 
 .placeholder-card__line,
 .placeholder-card__avatar,
 .placeholder-card__block {
-  background: linear-gradient(90deg, rgba(230, 230, 230, 0.85), rgba(243, 243, 243, 0.92));
+  background: linear-gradient(90deg, rgba(226, 226, 226, 0.84), rgba(240, 240, 240, 0.92));
 }
 
 .placeholder-card__line {
@@ -572,7 +603,7 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .home-hero {
-    padding-top: 42px;
+    padding: 64px 0 76px;
   }
 
   .hero-title {
@@ -581,7 +612,7 @@ onMounted(() => {
   }
 
   .hero-composer {
-    padding: 16px 16px 14px;
+    padding: 14px 14px 16px;
     border-radius: 26px;
   }
 

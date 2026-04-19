@@ -83,9 +83,9 @@ const renderedMarkdown = computed(() => md.render(props.content))
 .markdown-content :deep(blockquote) {
   margin: 1.2em 0;
   padding: 14px 18px;
-  border-left: 3px solid rgba(201, 100, 66, 0.5);
+  border-left: 3px solid rgba(20, 20, 19, 0.14);
   border-radius: 0 18px 18px 0;
-  background: rgba(201, 100, 66, 0.08);
+  background: rgba(20, 20, 19, 0.04);
   color: var(--text-muted);
 }
 
@@ -104,7 +104,7 @@ const renderedMarkdown = computed(() => md.render(props.content))
   overflow-x: auto;
   border: 1px solid var(--border-strong);
   border-radius: 18px;
-  background: #f7f4ec;
+  background: #ffffff;
 }
 
 .markdown-content :deep(pre code) {
@@ -129,7 +129,7 @@ const renderedMarkdown = computed(() => md.render(props.content))
 
 .markdown-content :deep(th) {
   color: var(--text-strong);
-  background: rgba(232, 230, 220, 0.7);
+  background: rgba(20, 20, 19, 0.04);
 }
 
 .markdown-content :deep(a) {

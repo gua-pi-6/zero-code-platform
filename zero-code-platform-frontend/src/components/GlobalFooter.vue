@@ -98,7 +98,7 @@ const isHomePage = computed(() => route.path === '/')
 
 .footer-link a:hover,
 .footer-links a:hover {
-  color: var(--accent-warm);
+  color: var(--text-strong);
 }
 
 @media (max-width: 768px) {

@@ -8,7 +8,7 @@
       },
     ]"
   >
-    <GlobalHeader :compact="isWorkspacePage" />
+    <GlobalHeader v-if="!isWorkspacePage" :compact="isWorkspacePage" />
     <a-layout-content
       :class="[
         'main-content',
@@ -48,24 +48,25 @@ const showFooter = computed(() => !isWorkspacePage.value && !isHomePage.value)
   z-index: 1;
   width: 100%;
   min-height: calc(100vh - var(--header-height));
-  padding-top: 24px;
+  padding-top: 18px;
 }
 
 .main-content--workspace {
-  padding-top: 12px;
+  min-height: 100vh;
+  padding-top: 0;
 }
 
 .main-content--home {
-  padding-top: 8px;
+  padding-top: 0;
 }
 
 @media (max-width: 768px) {
   .main-content {
-    padding-top: 18px;
+    padding-top: 14px;
   }
 
   .main-content--home {
-    padding-top: 12px;
+    padding-top: 0;
   }
 }
 </style>

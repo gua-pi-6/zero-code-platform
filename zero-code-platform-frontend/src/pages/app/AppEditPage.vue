@@ -188,7 +188,8 @@ const rules = {
 }
 
 const fetchAppInfo = async () => {
-  const id = route.params.id as string
+  const rawId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
+  const id = toIdString(rawId)
   if (!id) {
     message.error('应用 ID 不存在')
     router.push('/')
@@ -275,7 +276,9 @@ const goToChat = () => {
 
 const openPreview = () => {
   if (appInfo.value?.codeGenType && appInfo.value?.id) {
-    const url = getStaticPreviewUrl(appInfo.value.codeGenType, String(appInfo.value.id))
+    const baseUrl = getStaticPreviewUrl(appInfo.value.codeGenType, toIdString(appInfo.value.id))
+    const separator = baseUrl.includes('?') ? '&' : '?'
+    const url = `${baseUrl}${separator}previewAt=${Date.now()}`
     window.open(url, '_blank')
   }
 }
@@ -350,7 +353,7 @@ onMounted(() => {
 .cover-preview {
   overflow: hidden;
   border-radius: 26px;
-  background: rgba(255, 255, 255, 0.7);
+  background: #ffffff;
 }
 
 .cover-preview img {
@@ -367,9 +370,7 @@ onMounted(() => {
   aspect-ratio: 16 / 10;
   border: 1px solid var(--border-light);
   border-radius: 26px;
-  background:
-    radial-gradient(circle at top left, rgba(201, 100, 66, 0.18), transparent 24%),
-    linear-gradient(135deg, #efe9dc, #e6ddce);
+  background: #ffffff;
 }
 
 .cover-placeholder strong {

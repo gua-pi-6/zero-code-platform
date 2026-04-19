@@ -245,7 +245,7 @@ onMounted(() => {
   height: 72px;
   border-radius: 18px;
   color: var(--text-subtle);
-  background: rgba(232, 230, 220, 0.8);
+  background: #ffffff;
 }
 
 .prompt-text {

@@ -72,16 +72,17 @@ export async function updateAppByAdmin(
 }
 
 /** 此处后端没有提供注释 GET /app/chat/gen/code */
-export async function chatToGenCode(
+export async function switchChatMode(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.chatToGenCodeParams,
+  body: API.AppChatModeSwitchRequest,
   options?: { [key: string]: any }
 ) {
-  return request<API.ServerSentEventString[]>('/app/chat/gen/code', {
-    method: 'GET',
-    params: {
-      ...params,
+  return request<API.BaseResponseBoolean>('/app/chat/mode/switch', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
+    data: body,
     ...(options || {}),
   })
 }
