@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.chen.ai.AiCodeGenTypeRoutingServiceFactory;
+import com.chen.ai.AiSummaryService;
 import com.chen.annotation.AuthCheck;
 import com.chen.common.BaseResponse;
 import com.chen.common.DeleteRequest;
@@ -84,6 +85,9 @@ public class AppController {
 
     @Resource
     private AppChatModeService appChatModeService;
+
+    @Resource
+    private AiSummaryService aiSummaryService;
 
     /**
      * 下载指定应用的生成代码。
@@ -227,7 +231,7 @@ public class AppController {
         App app = new App();
         BeanUtil.copyProperties(appAddRequest, app);
         app.setUserId(loginUser.getId());
-        app.setAppName(initPrompt.substring(0, Math.min(initPrompt.length(), 12)));
+        app.setAppName(aiSummaryService.summaryAppName(initPrompt));
 
         // 根据初始提示词路由出最合适的代码生成类型。
         CodeGenTypeEnum codeGenType = aiCodeGenTypeRoutingServiceFactory.createAiCodeGenTypeRoutingService().routeCodeGenType(initPrompt);
@@ -359,7 +363,7 @@ public class AppController {
         ThrowUtils.throwIf(pageSize > 20, ErrorCode.PARAMS_ERROR, "每页最多查询 20 个应用");
         long pageNum = appQueryRequest.getPageNum();
 
-        // 强制查询精选应用数据。
+        // 强制查询精选应用数据
         appQueryRequest.setPriority(AppConstant.GOOD_APP_PRIORITY);
         QueryWrapper queryWrapper = appService.getQueryWrapper(appQueryRequest);
         Page<App> appPage = appService.page(Page.of(pageNum, pageSize), queryWrapper);

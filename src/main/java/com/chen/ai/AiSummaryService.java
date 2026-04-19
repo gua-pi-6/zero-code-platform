@@ -9,4 +9,7 @@ public interface AiSummaryService {
 
     @SystemMessage(fromResource = "prompt/app-summary-system-prompt.txt")
     String refreshSummary(String summaryInput);
+
+    @SystemMessage(fromResource = "prompt/app-summary-name-system-prompt.txt")
+    String summaryAppName(String initPrompt);
 }
