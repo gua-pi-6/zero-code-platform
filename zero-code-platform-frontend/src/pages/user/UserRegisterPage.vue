@@ -2,22 +2,16 @@
   <div id="userRegisterPage" class="page-shell auth-page">
     <div class="surface-panel auth-layout">
       <section class="auth-aside">
-        <span class="page-eyebrow">Create Account</span>
-        <h1 class="auth-title">注册一个新的创作工作台</h1>
-        <p class="auth-description">
-          从今天开始沉淀你的应用项目。注册后，你可以把每一次生成、修改和部署都保存在同一条工作流里。
-        </p>
+        <h1 class="auth-title">注册你的创作工作台</h1>
 
         <ul class="editorial-list">
           <li>
-            <span>History</span>
             <strong>保留你的项目脉络</strong>
-            <p>每个应用都会保留创建来源和后续对话，便于持续迭代。</p>
+            <p>每个应用都会保留创建来源和后续对话 便于持续迭代</p>
           </li>
           <li>
-            <span>Preview</span>
             <strong>边聊边看结果</strong>
-            <p>注册后即可在聊天页实时预览页面效果，并继续补充需求。</p>
+            <p>注册后即可在聊天页实时预览页面效果 并继续补充需求</p>
           </li>
         </ul>
       </section>
@@ -25,7 +19,7 @@
       <section class="auth-form-panel">
         <div class="auth-form-header">
           <h2>创建账号</h2>
-          <p>填写以下信息，马上开始生成你的第一个应用。</p>
+          <p>填写以下信息 马上开始生成你的第一个应用</p>
         </div>
 
         <a-form :model="formState" name="register" autocomplete="off" @finish="handleSubmit">
@@ -53,7 +47,7 @@
           </a-form-item>
 
           <div class="auth-tips">
-            已经有账号？
+            已经有账号
             <RouterLink to="/user/login">去登录</RouterLink>
           </div>
 
@@ -101,7 +95,7 @@ const handleSubmit = async (values: API.UserRegisterRequest) => {
       replace: true,
     })
   } else {
-    message.error(`注册失败：${res.data.message}`)
+    message.error(`注册失败 ${res.data.message}`)
   }
 }
 </script>
@@ -134,12 +128,6 @@ const handleSubmit = async (values: API.UserRegisterRequest) => {
   font-family: var(--font-serif);
   font-size: clamp(2.2rem, 4vw, 3.6rem);
   line-height: 1.08;
-}
-
-.auth-description {
-  margin: 0;
-  color: var(--text-muted);
-  line-height: 1.8;
 }
 
 .auth-form-panel {

@@ -35,7 +35,7 @@
         <template v-if="hasLoginUser">
           <a-dropdown placement="bottomRight">
             <button type="button" class="user-chip">
-              <a-avatar :src="loginUserStore.loginUser.userAvatar" :size="36">
+              <a-avatar :src="currentUserAvatar" :size="36">
                 {{ loginUserStore.loginUser.userName?.charAt(0) || 'U' }}
               </a-avatar>
               <span class="user-chip__text">
@@ -68,6 +68,7 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { LogoutOutlined } from '@ant-design/icons-vue'
+import defaultUserAvatar from '@/assets/userAvatar.png'
 import { userLogout } from '@/api/userController'
 import { useLoginUserStore } from '@/stores/loginUser'
 import { hasId } from '@/utils/id'
@@ -93,6 +94,9 @@ const loginUserStore = useLoginUserStore()
 
 const isAdmin = computed(() => loginUserStore.loginUser.userRole === 'admin')
 const hasLoginUser = computed(() => hasId(loginUserStore.loginUser.id))
+const currentUserAvatar = computed(
+  () => loginUserStore.loginUser.userAvatar?.trim() || defaultUserAvatar,
+)
 const isHomePage = computed(() => route.path === '/')
 const canShowAdminNav = computed(() => hasLoginUser.value && isAdmin.value)
 
@@ -214,8 +218,8 @@ const doLogout = async () => {
 
 .logo {
   display: block;
-  width: 42px;
-  height: 42px;
+  width: 48.3px;
+  height: 48.3px;
   border-radius: 14px;
   background: transparent;
   box-shadow: none;

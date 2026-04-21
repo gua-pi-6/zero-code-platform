@@ -1,6 +1,6 @@
 <template>
   <div class="user-info">
-    <a-avatar class="user-avatar" :src="user?.userAvatar" :size="size">
+    <a-avatar class="user-avatar" :src="avatarSrc" :size="size">
       {{ user?.userName?.charAt(0) || 'U' }}
     </a-avatar>
     <div v-if="showName" class="user-meta">
@@ -13,16 +13,21 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import defaultUserAvatar from '@/assets/userAvatar.png'
+
 interface Props {
   user?: API.UserVO
   size?: number | 'small' | 'default' | 'large'
   showName?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   size: 'default',
   showName: true,
 })
+
+const avatarSrc = computed(() => props.user?.userAvatar?.trim() || defaultUserAvatar)
 </script>
 
 <style scoped>

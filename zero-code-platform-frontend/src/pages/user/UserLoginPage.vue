@@ -2,22 +2,16 @@
   <div id="userLoginPage" class="page-shell auth-page">
     <div class="surface-panel auth-layout">
       <section class="auth-aside">
-        <span class="page-eyebrow">Welcome Back</span>
         <h1 class="auth-title">登录到你的应用工作台</h1>
-        <p class="auth-description">
-          继续对话、继续预览、继续部署。你之前创建的每一个应用都在这里等你回来迭代。
-        </p>
 
         <ul class="editorial-list">
           <li>
-            <span>Workspace</span>
             <strong>继续已有项目</strong>
-            <p>重新进入聊天工作区，查看历史生成记录和当前预览结果。</p>
+            <p>重新进入聊天工作区 查看历史生成记录和当前预览结果</p>
           </li>
           <li>
-            <span>Deploy</span>
             <strong>随时下载与发布</strong>
-            <p>登录后你可以直接下载代码包，或把应用发布到部署地址。</p>
+            <p>登录后你可以直接下载代码包 或把应用发布到部署地址</p>
           </li>
         </ul>
       </section>
@@ -25,7 +19,7 @@
       <section class="auth-form-panel">
         <div class="auth-form-header">
           <h2>账号登录</h2>
-          <p>请输入你的账号和密码，继续管理应用。</p>
+          <p>请输入你的账号和密码 继续管理应用</p>
         </div>
 
         <a-form :model="formState" name="login" autocomplete="off" @finish="handleSubmit">
@@ -43,7 +37,7 @@
           </a-form-item>
 
           <div class="auth-tips">
-            还没有账号？
+            还没有账号
             <RouterLink to="/user/register">立即注册</RouterLink>
           </div>
 
@@ -88,14 +82,22 @@ const handleSubmit = async (values: API.UserLoginRequest) => {
 
 <style scoped>
 .auth-page {
-  padding-bottom: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--content-width);
+  min-height: min(760px, calc(100vh - 140px));
+  margin: 0 auto;
+  padding: 12px 0 48px;
 }
 
 .auth-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(340px, 460px);
   gap: 28px;
+  width: min(1180px, 100%);
   padding: 28px;
+  border-radius: 32px;
 }
 
 .auth-aside,

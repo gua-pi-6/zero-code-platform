@@ -2,10 +2,9 @@
   <div id="appEditPage" class="page-shell page-shell--wide edit-page">
     <section class="edit-header">
       <div>
-        <span class="page-eyebrow">App Settings</span>
         <h1 class="page-title page-title--section">{{ appInfo?.appName || '编辑应用设置' }}</h1>
         <p class="page-subtitle">
-          调整应用名称、封面和后台元信息。这里不改动原有生成逻辑，只负责管理展示层和元数据。
+          调整应用名称、封面和后台元信息，这里不改动原有生成逻辑，只负责管理展示层和元数据
         </p>
       </div>
 
@@ -21,7 +20,7 @@
       <div class="surface-panel edit-form-panel">
         <div class="panel-heading">
           <h2>基础信息</h2>
-          <p>可编辑字段会根据当前用户权限自动收敛，避免破坏原有权限边界。</p>
+          <p>可编辑字段会根据当前用户权限自动收敛，避免破坏原有权限边界</p>
         </div>
 
         <a-form
@@ -44,7 +43,7 @@
             v-if="isAdmin"
             label="应用封面"
             name="cover"
-            extra="建议使用 400 x 300 左右的图片地址，以获得更稳定的首页展示效果。"
+            extra="建议使用 400 x 300 左右的图片地址，以获得更稳定的首页展示效果"
           >
             <a-input v-model:value="formData.cover" placeholder="请输入封面图片 URL" />
           </a-form-item>
@@ -53,7 +52,7 @@
             v-if="isAdmin"
             label="优先级"
             name="priority"
-            extra="设置为 99 时通常用于首页精选推荐。"
+            extra="设置为 99 时通常用于首页精选推荐"
           >
             <a-input-number v-model:value="formData.priority" :min="0" :max="99" />
           </a-form-item>
@@ -66,12 +65,12 @@
               disabled
               show-count
             />
-            <div class="field-note">初始提示词由创建阶段生成，这里保持只读。</div>
+            <div class="field-note">初始提示词由创建阶段生成，这里保持只读</div>
           </a-form-item>
 
           <a-form-item label="生成方式" name="codeGenType">
             <a-input :value="formatCodeGenType(formData.codeGenType)" disabled />
-            <div class="field-note">生成方式会影响预览和下载结构，因此不在这里改动。</div>
+            <div class="field-note">生成方式会影响预览和下载结构，因此不在这里改动</div>
           </a-form-item>
 
           <a-form-item v-if="formData.deployKey" label="部署标识" name="deployKey">
@@ -89,22 +88,35 @@
         <div class="surface-panel edit-cover-panel">
           <div class="panel-heading">
             <h2>封面预览</h2>
-            <p>首页和卡片视图会优先使用这里的封面作为视觉入口。</p>
+            <p>首页和卡片视图会优先使用这里的封面作为视觉入口</p>
           </div>
 
           <div v-if="coverPreviewUrl" class="cover-preview">
             <img :src="coverPreviewUrl" alt="应用封面预览" />
           </div>
           <div v-else class="cover-placeholder">
-            <strong>{{ appInfo?.appName?.charAt(0) || 'A' }}</strong>
-            <p>暂未设置封面</p>
+            <div class="cover-skeleton" aria-hidden="true">
+              <div class="cover-skeleton__top"></div>
+              <div class="cover-skeleton__layout">
+                <div class="cover-skeleton__sidebar">
+                  <div class="cover-skeleton__avatar"></div>
+                  <div class="cover-skeleton__sidebar-line cover-skeleton__sidebar-line--short"></div>
+                  <div class="cover-skeleton__sidebar-line"></div>
+                </div>
+                <div class="cover-skeleton__content">
+                  <div class="cover-skeleton__line"></div>
+                  <div class="cover-skeleton__line"></div>
+                  <div class="cover-skeleton__line cover-skeleton__line--short"></div>
+                  <div class="cover-skeleton__block"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="surface-panel edit-meta-panel">
           <div class="panel-heading">
-            <h2>只读元信息</h2>
-            <p>以下数据来自现有后端接口，只作为辅助参考，不参与编辑提交。</p>
+            <h2>应用信息</h2>
           </div>
 
           <dl class="meta-list">
@@ -364,25 +376,87 @@ onMounted(() => {
 }
 
 .cover-placeholder {
-  display: grid;
-  place-items: center;
-  gap: 10px;
   aspect-ratio: 16 / 10;
   border: 1px solid var(--border-light);
   border-radius: 26px;
   background: #ffffff;
+  overflow: hidden;
 }
 
-.cover-placeholder strong {
-  color: rgba(20, 20, 19, 0.14);
-  font-family: var(--font-serif);
-  font-size: clamp(4rem, 8vw, 5.2rem);
-  line-height: 1;
+.cover-skeleton {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 18px;
+  background: rgba(246, 246, 244, 0.92);
 }
 
-.cover-placeholder p {
-  margin: 0;
-  color: var(--text-subtle);
+.cover-skeleton__top,
+.cover-skeleton__sidebar,
+.cover-skeleton__avatar,
+.cover-skeleton__sidebar-line,
+.cover-skeleton__line,
+.cover-skeleton__block {
+  background: linear-gradient(90deg, rgba(226, 226, 226, 0.88), rgba(240, 240, 240, 0.94));
+}
+
+.cover-skeleton__top,
+.cover-skeleton__sidebar-line,
+.cover-skeleton__line {
+  height: 10px;
+  border-radius: 999px;
+}
+
+.cover-skeleton__top {
+  width: 74%;
+}
+
+.cover-skeleton__layout {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 14px;
+  margin-top: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+.cover-skeleton__sidebar {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  align-content: start;
+  gap: 12px;
+  padding: 14px 12px;
+  border-radius: 14px;
+}
+
+.cover-skeleton__avatar {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.cover-skeleton__sidebar-line--short {
+  width: 70%;
+}
+
+.cover-skeleton__content {
+  display: grid;
+  grid-template-rows: auto auto auto minmax(68px, 1fr);
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.46);
+}
+
+.cover-skeleton__line--short {
+  width: 48%;
+}
+
+.cover-skeleton__block {
+  min-height: 54px;
+  border-radius: 12px;
 }
 
 .meta-list {

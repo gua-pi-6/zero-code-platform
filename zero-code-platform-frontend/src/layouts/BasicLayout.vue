@@ -6,10 +6,14 @@
         'basic-layout--workspace': isWorkspacePage,
         'basic-layout--home': isHomePage,
         'basic-layout--login': isAuthPage,
+        'basic-layout--edit': isEditPage,
       },
     ]"
   >
-    <GlobalHeader v-if="!isWorkspacePage && !isAuthPage" :compact="isWorkspacePage" />
+    <GlobalHeader
+      v-if="!isWorkspacePage && !isAuthPage && !isEditPage"
+      :compact="isWorkspacePage"
+    />
     <a-layout-content
       :class="[
         'main-content',
@@ -17,6 +21,7 @@
           'main-content--workspace': isWorkspacePage,
           'main-content--home': isHomePage,
           'main-content--login': isAuthPage,
+          'main-content--edit': isEditPage,
         },
       ]"
     >
@@ -36,6 +41,7 @@ const route = useRoute()
 
 const isWorkspacePage = computed(() => route.path.startsWith('/app/chat/'))
 const isHomePage = computed(() => route.path === '/')
+const isEditPage = computed(() => route.path.startsWith('/app/edit/'))
 const isAuthPage = computed(
   () => route.path === '/user/login' || route.path === '/user/register',
 )
@@ -62,6 +68,11 @@ const showFooter = computed(() => !isWorkspacePage.value && !isHomePage.value)
 }
 
 .main-content--home {
+  padding-top: 0;
+}
+
+.main-content--edit {
+  min-height: 100vh;
   padding-top: 0;
 }
 

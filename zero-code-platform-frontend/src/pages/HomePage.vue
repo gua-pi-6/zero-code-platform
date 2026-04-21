@@ -267,27 +267,86 @@ onMounted(() => {
 
 <style scoped>
 .home-page {
+  --home-header-offset: 74px;
   position: relative;
+  margin-top: calc(-1 * var(--home-header-offset));
+  padding-top: var(--home-header-offset);
   padding-bottom: 64px;
   overflow: hidden;
-  background: #ffffff;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(229, 247, 250, 0.92) 0%,
+      rgba(240, 249, 251, 0.58) 16%,
+      rgba(249, 251, 252, 0) 34%
+    ),
+    radial-gradient(
+      circle at 14% -12%,
+      rgba(191, 246, 242, 0.42) 0%,
+      rgba(191, 246, 242, 0.16) 18%,
+      rgba(191, 246, 242, 0) 42%
+    ),
+    radial-gradient(
+      circle at 12% 78%,
+      rgba(191, 246, 242, 0.82) 0%,
+      rgba(191, 246, 242, 0.34) 22%,
+      rgba(191, 246, 242, 0) 46%
+    ),
+    radial-gradient(
+      circle at 84% 18%,
+      rgba(143, 231, 243, 0.56) 0%,
+      rgba(143, 231, 243, 0.18) 20%,
+      rgba(143, 231, 243, 0) 42%
+    ),
+    radial-gradient(
+      circle at 86% 62%,
+      rgba(139, 164, 255, 0.34) 0%,
+      rgba(139, 164, 255, 0.12) 20%,
+      rgba(139, 164, 255, 0) 38%
+    ),
+    radial-gradient(
+      circle at 72% 10%,
+      rgba(201, 167, 255, 0.26) 0%,
+      rgba(201, 167, 255, 0.1) 18%,
+      rgba(201, 167, 255, 0) 36%
+    ),
+    linear-gradient(180deg, #eef8fb 0%, #f6fbfc 14%, #fbfcfb 30%, #f7f8f7 100%);
 }
 
 .home-page::before,
 .home-page::after {
   position: absolute;
-  left: 50%;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.72;
   pointer-events: none;
   content: '';
-  transform: translateX(-50%);
 }
 
 .home-page::before {
-  content: none;
+  left: -144px;
+  bottom: -128px;
+  width: 544px;
+  height: 544px;
+  background: radial-gradient(
+    circle,
+    rgba(191, 246, 242, 0.92),
+    rgba(124, 203, 255, 0.36),
+    rgba(124, 203, 255, 0)
+  );
 }
 
 .home-page::after {
-  content: none;
+  top: 96px;
+  right: -96px;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(
+    circle,
+    rgba(201, 167, 255, 0.58),
+    rgba(143, 231, 243, 0.32),
+    rgba(143, 231, 243, 0)
+  );
 }
 
 .home-hero,
@@ -329,8 +388,8 @@ onMounted(() => {
 
 .hero-title__mark {
   display: block;
-  width: clamp(40px, 4vw, 48px);
-  height: clamp(40px, 4vw, 48px);
+  width: clamp(64px, 6.4vw, 76.8px);
+  height: clamp(64px, 6.4vw, 76.8px);
   border-radius: 16px;
   background: transparent;
   box-shadow: none;
@@ -563,6 +622,10 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
+  .home-page {
+    --home-header-offset: 64px;
+  }
+
   .home-hero {
     padding: 64px 0 76px;
   }
